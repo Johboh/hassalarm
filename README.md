@@ -11,7 +11,7 @@ Once that happen, a call to your Hass.io instance will eventually be made.
 
 Once your device have a network connection, it should eventually do a call to the Hass.io API, and a `sensor.next_alarm` should popup.
 
-You can then use this for your automations, e.g:
+You can then use this for your automations. This is an example where the scene `wakeup` will be called 3 minutes before the scheduled alarm.
 ```yaml
   trigger:
   - minutes: /1
