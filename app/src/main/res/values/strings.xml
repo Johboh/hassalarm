@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Hass.io alarm</string>
+    <string name="no_scheduled_alarm">No next alarm scheduled.</string>
+    <string name="hass_io_host_name_ip">hass.io host name/IP</string>
+    <string name="hass_io_api_key">hass.io API key</string>
+    <string name="save">Save</string>
+    <string name="next_alarm">Next alarm</string>
+</resources>
