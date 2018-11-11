@@ -5,4 +5,5 @@
     <string name="hass_io_api_key">hass.io API key</string>
     <string name="save">Save</string>
     <string name="next_alarm">Next alarm</string>
+    <string name="toast_saved">Parameters saved</string>
 </resources>

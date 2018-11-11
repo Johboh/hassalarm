@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -27,10 +28,13 @@ public class MainActivity extends AppCompatActivity {
         final SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         final EditText hostEditText = findViewById(R.id.host);
         final EditText apiKeyEditText = findViewById(R.id.api_key);
-        findViewById(R.id.save).setOnClickListener(view -> sharedPreferences.edit()
+        findViewById(R.id.save).setOnClickListener(view -> {
+            sharedPreferences.edit()
                 .putString(KEY_PREFS_HOST, hostEditText.getText().toString().trim())
                 .putString(KEY_PREFS_API_KEY, apiKeyEditText.getText().toString().trim())
-                .apply());
+                .apply();
+            Toast.makeText(this, R.string.toast_saved, Toast.LENGTH_SHORT).show();
+        });
 
         // Set current saved host and api key.
         hostEditText.setText(sharedPreferences.getString(KEY_PREFS_HOST, ""));
