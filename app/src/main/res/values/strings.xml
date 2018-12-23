@@ -6,4 +6,5 @@
     <string name="save">Save</string>
     <string name="next_alarm">Next alarm</string>
     <string name="toast_saved">Parameters saved</string>
+    <string name="hass_io_entity_id">entity id e.g. sensor.next_alarm</string>
 </resources>

@@ -4,6 +4,7 @@ import android.app.AlarmManager;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -13,7 +14,9 @@ import java.util.Calendar;
 import java.util.Locale;
 
 import static com.fjun.hassalarm.Constants.KEY_PREFS_API_KEY;
+import static com.fjun.hassalarm.Constants.KEY_PREFS_ENTITY_ID;
 import static com.fjun.hassalarm.Constants.KEY_PREFS_HOST;
+import static com.fjun.hassalarm.Constants.KEY_PREFS_IS_TOKEN;
 import static com.fjun.hassalarm.Constants.PREFS_NAME;
 
 public class MainActivity extends AppCompatActivity {
@@ -28,10 +31,14 @@ public class MainActivity extends AppCompatActivity {
         final SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         final EditText hostEditText = findViewById(R.id.host);
         final EditText apiKeyEditText = findViewById(R.id.api_key);
+        final EditText entityIdEditText = findViewById(R.id.entity_id);
+        final CheckBox isToken = findViewById(R.id.isToken);
         findViewById(R.id.save).setOnClickListener(view -> {
             sharedPreferences.edit()
                 .putString(KEY_PREFS_HOST, hostEditText.getText().toString().trim())
                 .putString(KEY_PREFS_API_KEY, apiKeyEditText.getText().toString().trim())
+                .putString(KEY_PREFS_ENTITY_ID, entityIdEditText.getText().toString().trim())
+                .putBoolean(KEY_PREFS_IS_TOKEN, isToken.isChecked())
                 .apply();
             Toast.makeText(this, R.string.toast_saved, Toast.LENGTH_SHORT).show();
         });
@@ -39,6 +46,8 @@ public class MainActivity extends AppCompatActivity {
         // Set current saved host and api key.
         hostEditText.setText(sharedPreferences.getString(KEY_PREFS_HOST, ""));
         apiKeyEditText.setText(sharedPreferences.getString(KEY_PREFS_API_KEY, ""));
+        entityIdEditText.setText(sharedPreferences.getString(KEY_PREFS_ENTITY_ID, ""));
+        isToken.setChecked(sharedPreferences.getBoolean(KEY_PREFS_IS_TOKEN,false));
 
         showNextAlarm(textView);
         NextAlarmUpdater.scheduleJob(this);
