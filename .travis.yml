@@ -10,7 +10,7 @@ android:
     - extra-google-m2repository
 
 before_install:
-  - yes | sdkmanager --licenses
+  - yes | sdkmanager "build-tools;28.0.3"
 
 script:
   - ./gradlew test
