@@ -5,3 +5,5 @@ android:
     - android-28
     - extra
     - sys-img-x86-android-26
+before_install:
+  - yes | sdkmanager "platforms;android-28"
