@@ -5,7 +5,7 @@ Expect that alarm clocks schedule alarms properly which will trigger the system 
 Once that happen, a call to your Hass.io instance will eventually be made.
 
 ## Usage
-1. Clone the repo and build the app: `./gradlew installDebug`
+1. Install via [Google Play Store](https://play.google.com/store/apps/details?id=com.fjun.hassalarm) or clone the repo and build the app: `./gradlew installDebug`
 2. Open it and setup your hostname and API key.
 3. Schedule an alarm in any of your alarm apps
 
