@@ -24,11 +24,35 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
+        android:layout_marginBottom="16dp"
         android:hint="@string/hass_io_api_key"
         android:inputType="textPassword"
+        app:layout_constraintBottom_toTopOf="@+id/isToken"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <CheckBox
+        android:id="@+id/isToken"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Long-Lived Access Token"
+        tools:layout_editor_absoluteX="103dp"
+        tools:layout_editor_absoluteY="120dp"
+        app:layout_constraintBottom_toTopOf="@+id/entity_id"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"/>
+
+    <EditText
+        android:id="@+id/entity_id"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        android:hint="@string/hass_io_entity_id"
         app:layout_constraintBottom_toTopOf="@+id/save"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.502"
         app:layout_constraintStart_toStartOf="parent" />
 
     <Button
@@ -49,5 +73,6 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
 
 </android.support.constraint.ConstraintLayout>

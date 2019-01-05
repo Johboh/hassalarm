@@ -21,7 +21,9 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 import static com.fjun.hassalarm.Constants.DEFAULT_PORT;
 import static com.fjun.hassalarm.Constants.KEY_PREFS_API_KEY;
+import static com.fjun.hassalarm.Constants.KEY_PREFS_ENTITY_ID;
 import static com.fjun.hassalarm.Constants.KEY_PREFS_HOST;
+import static com.fjun.hassalarm.Constants.KEY_PREFS_IS_TOKEN;
 import static com.fjun.hassalarm.Constants.PREFS_NAME;
 
 public class NextAlarmUpdaterJob extends JobService {
@@ -64,6 +66,8 @@ public class NextAlarmUpdaterJob extends JobService {
 
         // Support empty API key, if there is no one required.
         final String apiKey = sharedPreferences.getString(KEY_PREFS_API_KEY, "");
+        final String entityId = sharedPreferences.getString(KEY_PREFS_ENTITY_ID, "");
+        final boolean isToken = sharedPreferences.getBoolean(KEY_PREFS_IS_TOKEN, false);
         final Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(host)
                 .addConverterFactory(GsonConverterFactory.create())
@@ -77,7 +81,14 @@ public class NextAlarmUpdaterJob extends JobService {
         }
 
         // Enqueue call and run on background thread.
-        mCall = hassApi.setNextAlarm(new State(time), apiKey);
+        // Check if it is using long lived access tokens
+        if (isToken) {
+            // Create Authorization Header value
+            String bearer = "Bearer " + apiKey;
+            mCall = hassApi.setNextAlarmToken(new State(time), entityId, bearer);
+        } else {
+            mCall = hassApi.setNextAlarm(new State(time), apiKey);
+        }
         mCall.enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
