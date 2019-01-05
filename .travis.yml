@@ -4,3 +4,4 @@ android:
     - build-tools-28.0.0
     - android-28
     - extra
+    - sys-img-x86-android-26
