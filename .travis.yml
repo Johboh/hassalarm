@@ -13,7 +13,7 @@ android:
 before_install:
   - yes | sdkmanager "platforms;android-28"
 
- script:
+script:
   - ./gradlew test
  
 before_cache:
