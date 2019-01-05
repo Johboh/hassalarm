@@ -1,6 +1,5 @@
 language: android
 jdk: oraclejdk8
-sudo: false
 
 android:
   components:
@@ -8,10 +7,10 @@ android:
     - platform-tools
     - build-tools-28.0.0
     - android-28
-    - extra
+    - extra-google-m2repository
 
 before_install:
-  - yes | sdkmanager "platforms;android-28"
+  - yes | sdkmanager "platforms;build-tools;28.0.3"
 
 script:
   - ./gradlew test
