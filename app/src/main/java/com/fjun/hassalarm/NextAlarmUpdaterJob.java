@@ -19,6 +19,7 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
+import static com.fjun.hassalarm.Constants.DEFAULT_ENTITY_ID;
 import static com.fjun.hassalarm.Constants.DEFAULT_PORT;
 import static com.fjun.hassalarm.Constants.KEY_PREFS_API_KEY;
 import static com.fjun.hassalarm.Constants.KEY_PREFS_ENTITY_ID;
@@ -28,6 +29,7 @@ import static com.fjun.hassalarm.Constants.PREFS_NAME;
 
 public class NextAlarmUpdaterJob extends JobService {
 
+    private static final String BEARER_PATTERN = "Bearer %s";
     static final int JOB_ID = 0;
 
     private Call<ResponseBody> mCall;
@@ -65,8 +67,8 @@ public class NextAlarmUpdaterJob extends JobService {
         }
 
         // Support empty API key, if there is no one required.
-        final String apiKey = sharedPreferences.getString(KEY_PREFS_API_KEY, "");
-        final String entityId = sharedPreferences.getString(KEY_PREFS_ENTITY_ID, "");
+        final String apiKeyOrToken = sharedPreferences.getString(KEY_PREFS_API_KEY, "");
+        String entityId = sharedPreferences.getString(KEY_PREFS_ENTITY_ID, DEFAULT_ENTITY_ID);
         final boolean isToken = sharedPreferences.getBoolean(KEY_PREFS_IS_TOKEN, false);
         final Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(host)
@@ -80,14 +82,19 @@ public class NextAlarmUpdaterJob extends JobService {
             mCall.cancel();
         }
 
+        // Default to default entity id, if none is set.
+        if (TextUtils.isEmpty(entityId)) {
+            entityId = DEFAULT_ENTITY_ID;
+        }
+
         // Enqueue call and run on background thread.
         // Check if it is using long lived access tokens
         if (isToken) {
             // Create Authorization Header value
-            String bearer = "Bearer " + apiKey;
-            mCall = hassApi.setNextAlarmToken(new State(time), entityId, bearer);
+            String bearer = String.format(BEARER_PATTERN, apiKeyOrToken);
+            mCall = hassApi.updateStateUsingToken(new State(time), entityId, bearer);
         } else {
-            mCall = hassApi.setNextAlarm(new State(time), apiKey);
+            mCall = hassApi.updateStateUsingApiKey(new State(time), entityId, apiKeyOrToken);
         }
         mCall.enqueue(new Callback<ResponseBody>() {
             @Override
