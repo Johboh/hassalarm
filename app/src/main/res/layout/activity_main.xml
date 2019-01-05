@@ -35,7 +35,7 @@
         android:id="@+id/isToken"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Long-Lived Access Token"
+        android:text="@string/long_lived_access_token"
         tools:layout_editor_absoluteX="103dp"
         tools:layout_editor_absoluteY="120dp"
         app:layout_constraintBottom_toTopOf="@+id/entity_id"
