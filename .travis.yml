@@ -1,0 +1,6 @@
+language: android
+android:
+  components:
+    - build-tools-28.0.0
+    - android-28
+    - extra
