@@ -25,3 +25,6 @@ You can then use this for your automations. This is an example where the scene `
       entity_id: scene.wakeup
     service: scene.turn_on
 ```
+
+## Build status
+[![Build Status](https://travis-ci.com/Johboh/hassalarm.svg?branch=master)](https://travis-ci.com/Johboh/hassalarm)
