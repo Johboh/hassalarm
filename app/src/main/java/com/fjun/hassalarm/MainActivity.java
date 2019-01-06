@@ -50,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
         isToken.setChecked(sharedPreferences.getBoolean(KEY_PREFS_IS_TOKEN,false));
 
         showNextAlarm(textView);
-        NextAlarmUpdater.scheduleJob(this);
+        NextAlarmUpdaterJob.scheduleJob(this);
     }
 
     private void showNextAlarm(TextView textView) {

@@ -20,6 +20,6 @@ public class NextAlarmBroadcastReceiver extends BroadcastReceiver {
             return;
         }
 
-        NextAlarmUpdater.scheduleJob(context);
+        NextAlarmUpdaterJob.scheduleJob(context);
     }
 }

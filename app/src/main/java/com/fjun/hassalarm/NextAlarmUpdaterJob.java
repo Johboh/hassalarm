@@ -1,8 +1,11 @@
 package com.fjun.hassalarm;
 
 import android.app.AlarmManager;
+import android.app.job.JobInfo;
 import android.app.job.JobParameters;
+import android.app.job.JobScheduler;
 import android.app.job.JobService;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.text.TextUtils;
@@ -76,7 +79,7 @@ public class NextAlarmUpdaterJob extends JobService {
                 .build();
 
         final HassApi hassApi = retrofit.create(HassApi.class);
-        Log.d(NextAlarmUpdater.class.getName(), "Setting time to " + time);
+        Log.d(NextAlarmUpdaterJob.class.getName(), "Setting time to " + time);
 
         if (mCall != null) {
             mCall.cancel();
@@ -99,13 +102,13 @@ public class NextAlarmUpdaterJob extends JobService {
         mCall.enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                Log.d(NextAlarmUpdater.class.getName(), "Retofit succeeded: " + response.body().toString());
+                Log.d(NextAlarmUpdaterJob.class.getName(), "Retofit succeeded: " + response.body().toString());
                 jobFinished(jobParameters, false);
             }
 
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
-                Log.e(NextAlarmUpdater.class.getName(), "Retofit failed: " + t.getMessage());
+                Log.e(NextAlarmUpdaterJob.class.getName(), "Retofit failed: " + t.getMessage());
                 // Fail, reschedule job.
                 jobFinished(jobParameters, true);
             }
@@ -120,5 +123,17 @@ public class NextAlarmUpdaterJob extends JobService {
             mCall.cancel();
         }
         return true;
+    }
+
+    /**
+     * Schedule a job to update the next alarm once we have some kind of network connection.
+     */
+    public static void scheduleJob(Context context) {
+        final JobInfo jobInfo = new JobInfo.Builder(JOB_ID,
+                new ComponentName(context, NextAlarmUpdaterJob.class))
+                .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
+                .build();
+        JobScheduler jobScheduler = (JobScheduler) context.getSystemService(Context.JOB_SCHEDULER_SERVICE);
+        jobScheduler.schedule(jobInfo);
     }
 }
