@@ -41,6 +41,7 @@ public class MainActivity extends AppCompatActivity {
                 .putBoolean(KEY_PREFS_IS_TOKEN, isToken.isChecked())
                 .apply();
             Toast.makeText(this, R.string.toast_saved, Toast.LENGTH_SHORT).show();
+            startActivity(TestConnectionActivity.createIntent(this));
         });
 
         // Set current saved host and api key.

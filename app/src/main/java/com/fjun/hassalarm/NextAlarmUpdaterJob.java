@@ -11,6 +11,7 @@ import android.content.SharedPreferences;
 import android.text.TextUtils;
 import android.util.Log;
 
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
@@ -54,7 +55,18 @@ public class NextAlarmUpdaterJob extends JobService {
         mCall.enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                Log.d(NextAlarmUpdaterJob.class.getName(), "Retofit succeeded: " + response.body().toString());
+                try {
+                    final ResponseBody body = response.body();
+                    if (body != null) {
+                        Log.d(NextAlarmUpdaterJob.class.getName(), "Retofit succeeded: " + body.toString());
+                    } else if (response.errorBody() != null) {
+                        Log.d(NextAlarmUpdaterJob.class.getName(), "Retofit failed: " + response.errorBody().string());
+                    } else {
+                        Log.d(NextAlarmUpdaterJob.class.getName(), "Retofit failed with code: " + response.code());
+                    }
+                } catch (IOException e) {
+                    Log.d(NextAlarmUpdaterJob.class.getName(), "Retofit failed: " + e.getMessage());
+                }
                 jobFinished(jobParameters, false);
             }
 
