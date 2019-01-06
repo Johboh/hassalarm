@@ -40,66 +40,17 @@ public class NextAlarmUpdaterJob extends JobService {
 
     @Override
     public boolean onStartJob(JobParameters jobParameters) {
-        final AlarmManager alarmManager = getSystemService(AlarmManager.class);
-        final AlarmManager.AlarmClockInfo alarmClockInfo = alarmManager.getNextAlarmClock();
-
-        // Get next scheduled alarm, if any.
-        final String time;
-        if (alarmClockInfo != null) {
-            final long timestamp = alarmClockInfo.getTriggerTime();
-            final Calendar calendar = Calendar.getInstance();
-            calendar.setTimeInMillis(timestamp);
-            time = DATE_FORMAT.format(calendar.getTime());
-        } else {
-            time = "";
-        }
-
-        // Read host and API key.
-        final SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        String host = sharedPreferences.getString(KEY_PREFS_HOST, "");
-        if (TextUtils.isEmpty(host)) {
-            return false;
-        }
-
-        // No port number? Add default one.
-        if (!host.contains(":")) {
-            host = String.format(Locale.getDefault(), "%s:%d", host, DEFAULT_PORT);
-        }
-        // Default to http:// if there is no protocol defined.
-        if (!host.startsWith("http://") && !host.startsWith("https://")) {
-            host = String.format(Locale.getDefault(), "http://%s", host);
-        }
-
-        // Support empty API key, if there is no one required.
-        final String apiKeyOrToken = sharedPreferences.getString(KEY_PREFS_API_KEY, "");
-        String entityId = sharedPreferences.getString(KEY_PREFS_ENTITY_ID, DEFAULT_ENTITY_ID);
-        final boolean isToken = sharedPreferences.getBoolean(KEY_PREFS_IS_TOKEN, false);
-        final Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(host)
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-
-        final HassApi hassApi = retrofit.create(HassApi.class);
-        Log.d(NextAlarmUpdaterJob.class.getName(), "Setting time to " + time);
-
         if (mCall != null) {
             mCall.cancel();
         }
 
-        // Default to default entity id, if none is set.
-        if (TextUtils.isEmpty(entityId)) {
-            entityId = DEFAULT_ENTITY_ID;
+        try {
+            mCall = createRequestCall(this);
+        } catch (IllegalArgumentException e) {
+            Log.d(NextAlarmUpdaterJob.class.getName(), "Failed to create request: " + e.getMessage());
+            return false;
         }
 
-        // Enqueue call and run on background thread.
-        // Check if it is using long lived access tokens
-        if (isToken) {
-            // Create Authorization Header value
-            String bearer = String.format(BEARER_PATTERN, apiKeyOrToken);
-            mCall = hassApi.updateStateUsingToken(new State(time), entityId, bearer);
-        } else {
-            mCall = hassApi.updateStateUsingApiKey(new State(time), entityId, apiKeyOrToken);
-        }
         mCall.enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
@@ -124,6 +75,69 @@ public class NextAlarmUpdaterJob extends JobService {
             mCall.cancel();
         }
         return true;
+    }
+
+    /**
+     * Create a call that can be executed. Will throw an exception in case of any failure,
+     * like missing parameters etc.
+     */
+    public static Call<ResponseBody> createRequestCall(Context context) throws IllegalArgumentException {
+        final AlarmManager alarmManager = context.getSystemService(AlarmManager.class);
+        final AlarmManager.AlarmClockInfo alarmClockInfo = alarmManager.getNextAlarmClock();
+
+        // Get next scheduled alarm, if any.
+        final String time;
+        if (alarmClockInfo != null) {
+            final long timestamp = alarmClockInfo.getTriggerTime();
+            final Calendar calendar = Calendar.getInstance();
+            calendar.setTimeInMillis(timestamp);
+            time = DATE_FORMAT.format(calendar.getTime());
+        } else {
+            time = "";
+        }
+
+        // Read host and API key.
+        final SharedPreferences sharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        String host = sharedPreferences.getString(KEY_PREFS_HOST, "");
+        if (TextUtils.isEmpty(host)) {
+            throw new IllegalArgumentException("Host is missing. You need to specify the host to your hass.io instance.");
+        }
+
+        // No port number? Add default one.
+        if (!host.contains(":")) {
+            host = String.format(Locale.getDefault(), "%s:%d", host, DEFAULT_PORT);
+        }
+        // Default to http:// if there is no protocol defined.
+        if (!host.startsWith("http://") && !host.startsWith("https://")) {
+            host = String.format(Locale.getDefault(), "http://%s", host);
+        }
+
+        // Support empty API key, if there is no one required.
+        final String apiKeyOrToken = sharedPreferences.getString(KEY_PREFS_API_KEY, "");
+        String entityId = sharedPreferences.getString(KEY_PREFS_ENTITY_ID, DEFAULT_ENTITY_ID);
+        final boolean isToken = sharedPreferences.getBoolean(KEY_PREFS_IS_TOKEN, false);
+        final Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(host)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        final HassApi hassApi = retrofit.create(HassApi.class);
+        Log.d(NextAlarmUpdaterJob.class.getName(), "Setting time to " + time);
+
+        // Default to default entity id, if none is set.
+        if (TextUtils.isEmpty(entityId)) {
+            entityId = DEFAULT_ENTITY_ID;
+        }
+
+        // Enqueue call and run on background thread.
+        // Check if it is using long lived access tokens
+        if (isToken) {
+            // Create Authorization Header value
+            String bearer = String.format(BEARER_PATTERN, apiKeyOrToken);
+            return hassApi.updateStateUsingToken(new State(time), entityId, bearer);
+        } else {
+            return hassApi.updateStateUsingApiKey(new State(time), entityId, apiKeyOrToken);
+        }
     }
 
     /**
