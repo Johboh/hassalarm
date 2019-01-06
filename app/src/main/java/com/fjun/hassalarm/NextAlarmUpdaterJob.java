@@ -33,6 +33,7 @@ import static com.fjun.hassalarm.Constants.PREFS_NAME;
 public class NextAlarmUpdaterJob extends JobService {
 
     private static final String BEARER_PATTERN = "Bearer %s";
+    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:00", Locale.US);
     static final int JOB_ID = 0;
 
     private Call<ResponseBody> mCall;
@@ -48,7 +49,7 @@ public class NextAlarmUpdaterJob extends JobService {
             final long timestamp = alarmClockInfo.getTriggerTime();
             final Calendar calendar = Calendar.getInstance();
             calendar.setTimeInMillis(timestamp);
-            time = new SimpleDateFormat("yyyy-MM-dd HH:mm:00", Locale.US).format(calendar.getTime());
+            time = DATE_FORMAT.format(calendar.getTime());
         } else {
             time = "";
         }
