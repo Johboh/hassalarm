@@ -44,10 +44,24 @@ Or if you want to trigger an automation five minutes before the alarm will go of
       entity_id: light.bedroom
 ```
 
+## Webhook support
+HassAlarm supports updates through a webhook. This requires some setup on the Home Assistant side, but it greatly reduces the permissions the app has in Home Assistant.
+To use a webhook for HassAlarm updates, you can use the automation below and adapt it as necessary. Note that your webhook ID should be hard to guess.
+```yaml
+automation:
+  trigger:
+    platform: webhook
+    webhook_id: <your webhook id>
+  action:
+    service: input_datetime.set_datetime
+    data_template:
+      entity_id: "{{ trigger.json.entity_id }}"
+      datetime: "{{ trigger.json.datetime }}"
+```
 
 ## App usage
 1. Install via [Google Play Store](https://play.google.com/store/apps/details?id=com.fjun.hassalarm) or clone the repo and build the app: `./gradlew installDebug`
-1. Create a [long lived token](https://www.home-assistant.io/docs/authentication/#your-account-profile) on your profile in Home Assistant.
+1. Create a [long lived token](https://www.home-assistant.io/docs/authentication/#your-account-profile) on your profile or a webhook automation in Home Assistant.
 1. Open the app and setup your hostname, longed live token and input_datetime entity ID: `input_datetime.next_alarm`
 1. Schedule an alarm in any of your alarm apps
 

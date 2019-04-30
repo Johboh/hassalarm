@@ -29,6 +29,7 @@ import static com.fjun.hassalarm.Constants.DEFAULT_PORT;
 import static com.fjun.hassalarm.Constants.KEY_PREFS_API_KEY;
 import static com.fjun.hassalarm.Constants.KEY_PREFS_HOST;
 import static com.fjun.hassalarm.Constants.KEY_PREFS_IS_TOKEN;
+import static com.fjun.hassalarm.Constants.KEY_PREFS_IS_WEBHOOK;
 import static com.fjun.hassalarm.Constants.PREFS_NAME;
 
 public class NextAlarmUpdaterJob extends JobService {
@@ -109,8 +110,9 @@ public class NextAlarmUpdaterJob extends JobService {
         final String apiKeyOrToken = sharedPreferences.getString(KEY_PREFS_API_KEY, "");
         final String entityId = Migration.getEntityId(sharedPreferences);
         final boolean isToken = sharedPreferences.getBoolean(KEY_PREFS_IS_TOKEN, false);
+        final boolean isWebhook = sharedPreferences.getBoolean(KEY_PREFS_IS_WEBHOOK, false);
         final boolean entityIdIsLegacy = Migration.entityIdIsLegacy(sharedPreferences);
-        return createRequest(context, host, apiKeyOrToken, entityId, isToken, entityIdIsLegacy);
+        return createRequest(context, host, apiKeyOrToken, entityId, isToken, isWebhook, entityIdIsLegacy);
     }
 
     /**
@@ -122,6 +124,7 @@ public class NextAlarmUpdaterJob extends JobService {
                                         String apiKeyOrToken,
                                         String entityId,
                                         boolean isToken,
+                                        boolean isWebhook,
                                         boolean entityIdIsLegacy) throws IllegalArgumentException {
         final AlarmManager alarmManager = context.getSystemService(AlarmManager.class);
         final AlarmManager.AlarmClockInfo alarmClockInfo = alarmManager.getNextAlarmClock();
@@ -177,7 +180,9 @@ public class NextAlarmUpdaterJob extends JobService {
                 call = hassApi.setInputDatetimeUsingToken(datetime, bearer);
             }
         } else {
-            if (entityIdIsLegacy) {
+            if (isWebhook) {
+                call = hassApi.updateStateUsingWebhook(datetime, apiKeyOrToken);
+            } else if (entityIdIsLegacy) {
                 call = hassApi.updateStateUsingApiKey(state, entityId, apiKeyOrToken);
             } else {
                 call = hassApi.setInputDatetimeUsingApiKey(datetime, apiKeyOrToken);
