@@ -15,7 +15,7 @@ You can then use this for your automations. This is an example where the scene `
 ```yaml
   trigger:
   - minutes: /1
-    platform: time
+    platform: time_pattern
     seconds: 0
   condition:
   - condition: template
