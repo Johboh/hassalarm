@@ -42,17 +42,20 @@ public class NextAlarmUpdaterJob extends JobService {
 
     @Override
     public boolean onStartJob(JobParameters jobParameters) {
+        Log.d(Constants.LOG_TAG, "Starting job.");
         if (mCall != null) {
+            Log.d(Constants.LOG_TAG, "Canceling previously retrofit job.");
             mCall.cancel();
         }
 
         try {
             mCall = createRequestCall(this);
         } catch (IllegalArgumentException e) {
-            Log.d(NextAlarmUpdaterJob.class.getName(), "Failed to create request: " + e.getMessage());
+            Log.e(Constants.LOG_TAG, "Failed to create request: " + e.getMessage());
             return false;
         }
 
+        Log.d(Constants.LOG_TAG, "Enqueueing retrofit job.");
         mCall.enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
@@ -60,15 +63,15 @@ public class NextAlarmUpdaterJob extends JobService {
                 try {
                     final ResponseBody body = response.body();
                     if (body != null) {
-                        Log.d(NextAlarmUpdaterJob.class.getName(), "Retofit succeeded: " + body.toString());
+                        Log.d(Constants.LOG_TAG, "Retofit succeeded: " + body.toString());
                         wantsReschedule = false;
                     } else if (response.errorBody() != null) {
-                        Log.d(NextAlarmUpdaterJob.class.getName(), "Retofit failed: " + response.errorBody().string());
+                        Log.e(Constants.LOG_TAG, "Retofit failed: " + response.errorBody().string());
                     } else {
-                        Log.d(NextAlarmUpdaterJob.class.getName(), "Retofit failed with code: " + response.code());
+                        Log.e(Constants.LOG_TAG, "Retofit failed with code: " + response.code());
                     }
                 } catch (IOException e) {
-                    Log.d(NextAlarmUpdaterJob.class.getName(), "Retofit failed: " + e.getMessage());
+                    Log.e(Constants.LOG_TAG, "Retofit failed: " + e.getMessage());
                 }
                 jobFinished(jobParameters, wantsReschedule);
             }
@@ -86,6 +89,7 @@ public class NextAlarmUpdaterJob extends JobService {
 
     @Override
     public boolean onStopJob(JobParameters jobParameters) {
+        Log.d(Constants.LOG_TAG, "Stopping job.");
         if (mCall != null) {
             mCall.cancel();
         }
@@ -137,7 +141,7 @@ public class NextAlarmUpdaterJob extends JobService {
                 .build();
 
         final HassApi hassApi = retrofit.create(HassApi.class);
-        Log.d(NextAlarmUpdaterJob.class.getName(), "Setting time to " + time);
+        Log.d(Constants.LOG_TAG, "Setting time to " + time);
 
         // Default to default entity id, if none is set.
         if (TextUtils.isEmpty(entityId)) {
@@ -159,6 +163,7 @@ public class NextAlarmUpdaterJob extends JobService {
      * Schedule a job to update the next alarm once we have some kind of network connection.
      */
     public static void scheduleJob(Context context) {
+        Log.d(Constants.LOG_TAG, "Scheduling job");
         final JobInfo jobInfo = new JobInfo.Builder(JOB_ID,
                 new ComponentName(context, NextAlarmUpdaterJob.class))
                 .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
