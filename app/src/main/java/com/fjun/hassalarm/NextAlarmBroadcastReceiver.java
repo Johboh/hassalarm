@@ -4,6 +4,7 @@ import android.app.AlarmManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 
 /**
  * Listen for the global ACTION_NEXT_ALARM_CLOCK_CHANGED,
@@ -16,9 +17,13 @@ public class NextAlarmBroadcastReceiver extends BroadcastReceiver {
         if (intent == null) {
             return;
         }
-        if (!AlarmManager.ACTION_NEXT_ALARM_CLOCK_CHANGED.equalsIgnoreCase(intent.getAction())) {
+
+        final boolean isBootIntent = Intent.ACTION_BOOT_COMPLETED.equalsIgnoreCase(intent.getAction());
+        final boolean isNextAlarmIntent = AlarmManager.ACTION_NEXT_ALARM_CLOCK_CHANGED.equalsIgnoreCase(intent.getAction());
+        if (!isBootIntent && !isNextAlarmIntent) {
             return;
         }
+        Log.d(Constants.LOG_TAG, String.format("Got intent. Boot: %s, next alarm: %s", isBootIntent, isNextAlarmIntent));
 
         NextAlarmUpdaterJob.scheduleJob(context);
     }
