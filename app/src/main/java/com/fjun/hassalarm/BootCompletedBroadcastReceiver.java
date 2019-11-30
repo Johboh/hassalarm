@@ -10,6 +10,13 @@ import android.content.Intent;
 public class BootCompletedBroadcastReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
+        if (intent == null) {
+            return;
+        }
+        if (!Intent.ACTION_BOOT_COMPLETED.equalsIgnoreCase(intent.getAction())) {
+            return;
+        }
+
         NextAlarmUpdaterJob.scheduleJob(context);
     }
 }
