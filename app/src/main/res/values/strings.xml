@@ -4,7 +4,7 @@
     <string name="hass_io_host_name_ip">hass.io host name/IP</string>
     <string name="hass_io_api_key">hass.io API key or longed-lived token</string>
     <string name="save">Save and test connection</string>
-    <string name="next_alarm">Next alarm</string>
+    <string name="next_alarm">Next alarm %s</string>
     <string name="toast_saved">Parameters saved</string>
     <string name="hass_io_entity_id">Custom entity id e.g. sensor.next_alarm</string>
     <string name="long_lived_access_token">API key is longed-lived token</string>

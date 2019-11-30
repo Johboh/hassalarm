@@ -64,7 +64,7 @@ public class MainActivity extends AppCompatActivity {
         } else {
             final Calendar calendar = Calendar.getInstance();
             calendar.setTimeInMillis(nextAlarm.getTriggerTime());
-            textView.setText(new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(calendar.getTime()));
+            textView.setText(getString(R.string.next_alarm, new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(calendar.getTime())));
         }
     }
 }
