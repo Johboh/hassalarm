@@ -35,7 +35,7 @@ public class NextAlarmUpdaterJob extends JobService {
 
     private static final String BEARER_PATTERN = "Bearer %s";
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:00", Locale.US);
-    private static final int MAX_EXECUTION_DELAY_MS = 2*3600*1000; // 2h
+    private static final int MAX_EXECUTION_DELAY_MS = 3600*1000; // 1h
     static final int JOB_ID = 0;
 
     private Call<ResponseBody> mCall;
