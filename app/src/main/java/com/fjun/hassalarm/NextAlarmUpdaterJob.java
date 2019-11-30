@@ -35,6 +35,7 @@ public class NextAlarmUpdaterJob extends JobService {
 
     private static final String BEARER_PATTERN = "Bearer %s";
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:00", Locale.US);
+    private static final int MAX_EXECUTION_DELAY_MS = 2*3600*1000; // 2h
     static final int JOB_ID = 0;
 
     private Call<ResponseBody> mCall;
@@ -55,10 +56,12 @@ public class NextAlarmUpdaterJob extends JobService {
         mCall.enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                boolean wantsReschedule = true;
                 try {
                     final ResponseBody body = response.body();
                     if (body != null) {
                         Log.d(NextAlarmUpdaterJob.class.getName(), "Retofit succeeded: " + body.toString());
+                        wantsReschedule = false;
                     } else if (response.errorBody() != null) {
                         Log.d(NextAlarmUpdaterJob.class.getName(), "Retofit failed: " + response.errorBody().string());
                     } else {
@@ -67,7 +70,7 @@ public class NextAlarmUpdaterJob extends JobService {
                 } catch (IOException e) {
                     Log.d(NextAlarmUpdaterJob.class.getName(), "Retofit failed: " + e.getMessage());
                 }
-                jobFinished(jobParameters, false);
+                jobFinished(jobParameters, wantsReschedule);
             }
 
             @Override
@@ -159,6 +162,9 @@ public class NextAlarmUpdaterJob extends JobService {
         final JobInfo jobInfo = new JobInfo.Builder(JOB_ID,
                 new ComponentName(context, NextAlarmUpdaterJob.class))
                 .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
+                .setRequiresCharging(false)
+                .setRequiresDeviceIdle(false)
+                .setOverrideDeadline(MAX_EXECUTION_DELAY_MS)
                 .build();
         JobScheduler jobScheduler = (JobScheduler) context.getSystemService(Context.JOB_SCHEDULER_SERVICE);
         jobScheduler.schedule(jobInfo);
