@@ -14,7 +14,9 @@
     <string name="using_url">Request: %s %s\n</string>
     <string name="headers">Request headers: %s</string>
     <string name="body">Request body: %s\n\n</string>
+    <string name="help_text">This app listen for changes to the next scheduled alarm, reported by the OS. Decent alarm clock apps will report their next scheduled alarm to the OS. This app will sync the next alarm using the format yyyy-MM-dd HH:mm:00, within an hour from when the next scheduled alarm changes.</string>
     <string name="connection_ok">Success, response: %s\n</string>
     <string name="connection_failure">Failure: %s\n</string>
     <string name="connection_failure_code">Failure, code: %d\n</string>
+    <string name="help_text_about">About</string>
 </resources>
