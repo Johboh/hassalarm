@@ -11,5 +11,7 @@ interface Constants {
     String KEY_PREFS_ENTITY_ID = "entity_id";
     String KEY_PREFS_IS_TOKEN = "is_token";
     String DEFAULT_ENTITY_ID = "sensor.next_alarm";
+    String LAST_PUBLISH_ATTEMPT = "last_publish_attempt";
+    String LAST_PUBLISH_WAS_SUCCESSFUL = "last_publish_was_successful";
     int DEFAULT_PORT = 8123;
 }

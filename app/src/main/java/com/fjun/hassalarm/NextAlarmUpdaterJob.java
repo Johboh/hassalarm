@@ -35,7 +35,7 @@ public class NextAlarmUpdaterJob extends JobService {
 
     private static final String BEARER_PATTERN = "Bearer %s";
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:00", Locale.US);
-    private static final int MAX_EXECUTION_DELAY_MS = 3600*1000; // 1h
+    private static final int MAX_EXECUTION_DELAY_MS = 3600 * 1000; // 1h
     static final int JOB_ID = 0;
 
     private Call<ResponseBody> mCall;
@@ -52,6 +52,7 @@ public class NextAlarmUpdaterJob extends JobService {
             mCall = createRequestCall(this);
         } catch (IllegalArgumentException e) {
             Log.e(Constants.LOG_TAG, "Failed to create request: " + e.getMessage());
+            markAsDone(this, false);
             return false;
         }
 
@@ -74,6 +75,7 @@ public class NextAlarmUpdaterJob extends JobService {
                     Log.e(Constants.LOG_TAG, "Retofit failed: " + e.getMessage());
                 }
                 jobFinished(jobParameters, wantsReschedule);
+                markAsDone(NextAlarmUpdaterJob.this, !wantsReschedule);
             }
 
             @Override
@@ -81,6 +83,7 @@ public class NextAlarmUpdaterJob extends JobService {
                 Log.e(NextAlarmUpdaterJob.class.getName(), "Retofit failed: " + t.getMessage());
                 // Fail, reschedule job.
                 jobFinished(jobParameters, true);
+                markAsDone(NextAlarmUpdaterJob.this, false);
             }
         });
 
@@ -96,11 +99,24 @@ public class NextAlarmUpdaterJob extends JobService {
         return true;
     }
 
+    public Call<ResponseBody> createRequestCall(Context context) throws IllegalArgumentException {
+        final SharedPreferences sharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        String host = sharedPreferences.getString(KEY_PREFS_HOST, "");
+        final String apiKeyOrToken = sharedPreferences.getString(KEY_PREFS_API_KEY, "");
+        final String entityId = sharedPreferences.getString(KEY_PREFS_ENTITY_ID, DEFAULT_ENTITY_ID);
+        final boolean isToken = sharedPreferences.getBoolean(KEY_PREFS_IS_TOKEN, false);
+        return createRequestCall(context, host, apiKeyOrToken, entityId, isToken);
+    }
+
     /**
      * Create a call that can be executed. Will throw an exception in case of any failure,
      * like missing parameters etc.
      */
-    public static Call<ResponseBody> createRequestCall(Context context) throws IllegalArgumentException {
+    public static Call<ResponseBody> createRequestCall(Context context,
+                                                       String host,
+                                                       String apiKeyOrToken,
+                                                       String entityId,
+                                                       boolean isToken) throws IllegalArgumentException {
         final AlarmManager alarmManager = context.getSystemService(AlarmManager.class);
         final AlarmManager.AlarmClockInfo alarmClockInfo = alarmManager.getNextAlarmClock();
 
@@ -115,9 +131,7 @@ public class NextAlarmUpdaterJob extends JobService {
             time = "";
         }
 
-        // Read host and API key.
-        final SharedPreferences sharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        String host = sharedPreferences.getString(KEY_PREFS_HOST, "");
+        // Verify host and API key.
         if (TextUtils.isEmpty(host)) {
             throw new IllegalArgumentException("Host is missing. You need to specify the host to your hass.io instance.");
         }
@@ -132,9 +146,6 @@ public class NextAlarmUpdaterJob extends JobService {
         }
 
         // Support empty API key, if there is no one required.
-        final String apiKeyOrToken = sharedPreferences.getString(KEY_PREFS_API_KEY, "");
-        String entityId = sharedPreferences.getString(KEY_PREFS_ENTITY_ID, DEFAULT_ENTITY_ID);
-        final boolean isToken = sharedPreferences.getBoolean(KEY_PREFS_IS_TOKEN, false);
         final Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(host)
                 .addConverterFactory(GsonConverterFactory.create())
@@ -173,5 +184,14 @@ public class NextAlarmUpdaterJob extends JobService {
                 .build();
         JobScheduler jobScheduler = (JobScheduler) context.getSystemService(Context.JOB_SCHEDULER_SERVICE);
         jobScheduler.schedule(jobInfo);
+    }
+
+    public static void markAsDone(Context context, boolean successful) {
+        final SharedPreferences sharedPreferences = context.getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        sharedPreferences
+                .edit()
+                .putBoolean(Constants.LAST_PUBLISH_WAS_SUCCESSFUL, successful)
+                .putLong(Constants.LAST_PUBLISH_ATTEMPT, System.currentTimeMillis())
+                .apply();
     }
 }

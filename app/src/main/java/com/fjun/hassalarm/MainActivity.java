@@ -3,10 +3,9 @@ package com.fjun.hassalarm;
 import android.app.AlarmManager;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.widget.CheckBox;
-import android.widget.EditText;
+import android.text.TextUtils;
+import android.view.View;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -14,45 +13,69 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
 
-import static com.fjun.hassalarm.Constants.KEY_PREFS_API_KEY;
+import static com.fjun.hassalarm.Constants.DEFAULT_ENTITY_ID;
 import static com.fjun.hassalarm.Constants.KEY_PREFS_ENTITY_ID;
-import static com.fjun.hassalarm.Constants.KEY_PREFS_HOST;
-import static com.fjun.hassalarm.Constants.KEY_PREFS_IS_TOKEN;
 import static com.fjun.hassalarm.Constants.PREFS_NAME;
 
 public class MainActivity extends AppCompatActivity {
+
+    private TextView mEntityIdTextView;
+    private TextView mSuccessfulTextView;
+    private TextView mLastPublishAtTextView;
+    private TextView mNextAlarmTextView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        final TextView textView = findViewById(R.id.text);
 
-        // Support saving settings (host, api key)
-        final SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-        final EditText hostEditText = findViewById(R.id.host);
-        final EditText apiKeyEditText = findViewById(R.id.api_key);
-        final EditText entityIdEditText = findViewById(R.id.entity_id);
-        final CheckBox isToken = findViewById(R.id.isToken);
-        findViewById(R.id.save).setOnClickListener(view -> {
-            sharedPreferences.edit()
-                .putString(KEY_PREFS_HOST, hostEditText.getText().toString().trim())
-                .putString(KEY_PREFS_API_KEY, apiKeyEditText.getText().toString().trim())
-                .putString(KEY_PREFS_ENTITY_ID, entityIdEditText.getText().toString().trim())
-                .putBoolean(KEY_PREFS_IS_TOKEN, isToken.isChecked())
-                .apply();
-            Toast.makeText(this, R.string.toast_saved, Toast.LENGTH_SHORT).show();
-            startActivity(TestConnectionActivity.createIntent(this));
-        });
+        mNextAlarmTextView = findViewById(R.id.next_alarm);
+        mEntityIdTextView = findViewById(R.id.entity_id);
+        mSuccessfulTextView = findViewById(R.id.successful);
+        mLastPublishAtTextView = findViewById(R.id.publish_at);
 
-        // Set current saved host and api key.
-        hostEditText.setText(sharedPreferences.getString(KEY_PREFS_HOST, ""));
-        apiKeyEditText.setText(sharedPreferences.getString(KEY_PREFS_API_KEY, ""));
-        entityIdEditText.setText(sharedPreferences.getString(KEY_PREFS_ENTITY_ID, ""));
-        isToken.setChecked(sharedPreferences.getBoolean(KEY_PREFS_IS_TOKEN,false));
+        findViewById(R.id.edit_connection).setOnClickListener(v -> startActivity(EditConnectionActivity.createIntent(this)));
 
-        showNextAlarm(textView);
+        updateView();
+
         NextAlarmUpdaterJob.scheduleJob(this);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        updateView();
+    }
+
+    private void updateView() {
+        final SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        final boolean wasSuccessful = sharedPreferences.getBoolean(Constants.LAST_PUBLISH_WAS_SUCCESSFUL, false);
+        final Long lastAttempt = sharedPreferences.getLong(Constants.LAST_PUBLISH_ATTEMPT, 0);
+
+        if (wasSuccessful) {
+            mSuccessfulTextView.setText(R.string.published_successfully);
+            mLastPublishAtTextView.setVisibility(View.VISIBLE);
+            setLastPublishAt(mLastPublishAtTextView, lastAttempt);
+            mEntityIdTextView.setVisibility(View.VISIBLE);
+            final String entityId = sharedPreferences.getString(KEY_PREFS_ENTITY_ID, "");
+            mEntityIdTextView.setText(getString(R.string.entity_id, TextUtils.isEmpty(entityId) ? DEFAULT_ENTITY_ID : entityId));
+        } else {
+            if (lastAttempt > 0) {
+                mSuccessfulTextView.setText(R.string.failed_to_publish);
+            } else {
+                mSuccessfulTextView.setText(R.string.failed_no_connection);
+            }
+            mEntityIdTextView.setVisibility(View.GONE);
+            mLastPublishAtTextView.setVisibility(View.GONE);
+        }
+
+        showNextAlarm(mNextAlarmTextView);
+    }
+
+    private void setLastPublishAt(TextView textView, Long time) {
+        final Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(time);
+        textView.setText(getString(R.string.last_publish_at, new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(calendar.getTime())));
     }
 
     private void showNextAlarm(TextView textView) {
