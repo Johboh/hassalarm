@@ -24,6 +24,7 @@
     <string name="failed_no_connection">Missing Connection data, please Edit the Connection details</string>
     <string name="entity_id">Entity ID: %s</string>
     <string name="edit_connection">Edit Connection</string>
+    <string name="edit_connection_label">Edit Connection</string>
     <string name="last_publish_at">Last publish at %s</string>
     <string name="test_connection">Test Connection</string>
 </resources>
