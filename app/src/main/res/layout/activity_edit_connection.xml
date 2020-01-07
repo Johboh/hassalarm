@@ -1,95 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".EditConnectionActivity"
-    android:padding="10dp">
+    tools:context=".MainActivity">
 
-    <EditText
-        android:id="@+id/host"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:inputType="text"
-        android:layout_alignParentTop="true"
-        android:layout_marginBottom="10dp"
-        android:hint="@string/hass_io_host_name_ip" />
-
-
-    <EditText
-        android:id="@+id/api_key"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/host"
-        android:hint="@string/hass_io_api_key"
-        android:inputType="textPassword" />
-
-    <CheckBox
-        android:id="@+id/isToken"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/api_key"
-        android:text="@string/long_lived_access_token"
-        android:checked="true"
-        android:layout_marginBottom="10dp"
-        />
-
-    <EditText
-        android:id="@+id/entity_id"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:inputType="text"
-        android:layout_below="@id/isToken"
-        android:layout_marginBottom="10dp"
-        android:hint="@string/hass_io_entity_id" />
-
-    <Button
-        android:id="@+id/test_button"
+    <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/entity_id"
-        android:layout_marginBottom="10dp"
-        android:text="@string/test_connection"/>
+        android:theme="@style/AppTheme.AppBarOverlay">
 
-    <LinearLayout
-        android:id="@+id/status_container"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/test_button"
-        android:layout_marginBottom="15dp"
-        android:orientation="horizontal">
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorPrimary"
+            app:popupTheme="@style/AppTheme.PopupOverlay" />
 
-        <ProgressBar
-            android:id="@+id/progress"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:layout_marginEnd="10dp"
-            android:visibility="gone"/>
+    </com.google.android.material.appbar.AppBarLayout>
 
-        <TextView
-            android:id="@+id/status"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            tools:text="Running connection test..."/>
+    <include layout="@layout/content_edit_connection" />
 
-    </LinearLayout>
-
-    <TextView
-        android:id="@+id/log"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:singleLine="false"
-        android:scrollbars="vertical"
-        android:layout_below="@id/status_container"
-        android:layout_above="@+id/save"/>
-
-    <Button
-        android:id="@+id/save"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_marginTop="5dp"
-        android:text="Save and close"/>
-
-</RelativeLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

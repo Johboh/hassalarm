@@ -4,9 +4,12 @@ import android.app.AlarmManager;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import java.text.SimpleDateFormat;
@@ -28,6 +31,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        setSupportActionBar(findViewById(R.id.toolbar));
 
         mNextAlarmTextView = findViewById(R.id.next_alarm);
         mEntityIdTextView = findViewById(R.id.entity_id);
@@ -45,6 +49,21 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         updateView();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == R.id.action_about) {
+            startActivity(AboutActivity.createIntent(this));
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     private void updateView() {

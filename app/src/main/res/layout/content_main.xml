@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:layout_margin="12dp"
+    android:gravity="center_horizontal|center_vertical"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context=".MainActivity"
+    tools:showIn="@layout/activity_main">
+
+    <TextView
+        android:id="@+id/successful"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        app:autoSizeTextType="uniform"
+        android:textStyle="bold"
+        android:gravity="center_horizontal"
+        android:text="@string/published_successfully"/>
+
+    <TextView
+        android:id="@+id/publish_at"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:layout_marginTop="8dp"
+        android:text="@string/last_publish_at"/>
+
+    <TextView
+        android:id="@+id/entity_id"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:layout_marginTop="10dp"
+        android:text="@string/entity_id"/>
+
+    <TextView
+        android:id="@+id/next_alarm"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/next_alarm" />
+
+    <Button
+        android:id="@+id/edit_connection"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:text="@string/edit_connection"/>
+</LinearLayout>
