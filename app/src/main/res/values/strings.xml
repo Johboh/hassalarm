@@ -1,16 +1,17 @@
 <resources>
     <string name="app_name">Hassalarm</string>
     <string name="no_scheduled_alarm">No next alarm scheduled.</string>
-    <string name="hass_io_host_name_ip">hass.io host name/IP</string>
-    <string name="hass_io_api_key">hass.io API key or longed-lived token</string>
+    <string name="hass_io_host_name_ip">Home Assistant host name/IP</string>
+    <string name="hass_io_api_key">Home Assistant longed-lived token or API key</string>
     <string name="save">Save and test connection</string>
     <string name="next_alarm">Next alarm %s</string>
-    <string name="toast_saved">Parameters saved</string>
-    <string name="hass_io_entity_id">Custom entity id e.g. sensor.next_alarm</string>
-    <string name="long_lived_access_token">API key is longed-lived token</string>
+    <string name="toast_saved">Connection details saved.</string>
+    <string name="hass_io_entity_id">Entity ID</string>
+    <string name="long_lived_access_token">Above value is longed-lived token</string>
     <string name="button_close">Close</string>
     <string name="status_running">Running connection test…</string>
-    <string name="status_done">Connection test done.</string>
+    <string name="status_done_ok">Connection successful.</string>
+    <string name="status_done_failed">Connection failed, see log.</string>
     <string name="using_url">Request: %s %s\n</string>
     <string name="headers">Request headers: %s</string>
     <string name="body">Request body: %s\n\n</string>

@@ -38,6 +38,7 @@
         <activity
             android:name=".EditConnectionActivity"
             android:label="@string/edit_connection_label"
+            android:windowSoftInputMode="adjustNothing"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".AboutActivity" />
     </application>

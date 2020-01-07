@@ -1,50 +1,70 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:padding="10dp"
+    android:padding="14dp"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context=".EditConnectionActivity"
     tools:showIn="@layout/activity_edit_connection">
 
-    <EditText
+    <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/host"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:inputType="text"
         android:layout_alignParentTop="true"
-        android:layout_marginBottom="10dp"
-        android:hint="@string/hass_io_host_name_ip" />
+        android:layout_marginBottom="10dp">
 
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/host_input"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/hass_io_host_name_ip"
+            android:inputType="text" />
 
-    <EditText
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/api_key"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/host"
-        android:hint="@string/hass_io_api_key"
-        android:inputType="textPassword" />
+        android:layout_marginBottom="10dp">
 
-    <CheckBox
-        android:id="@+id/isToken"
-        android:layout_width="wrap_content"
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/api_key_input"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/hass_io_api_key"
+            android:inputType="textPassword" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <androidx.appcompat.widget.SwitchCompat
+        android:id="@+id/is_token_input"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/api_key"
-        android:text="@string/long_lived_access_token"
+        android:layout_marginBottom="10dp"
         android:checked="true"
-        android:layout_marginBottom="10dp"
-        />
+        android:text="@string/long_lived_access_token" />
 
-    <EditText
+    <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/entity_id"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:inputType="text"
-        android:layout_below="@id/isToken"
-        android:layout_marginBottom="10dp"
-        android:hint="@string/hass_io_entity_id" />
+        android:layout_below="@id/is_token_input"
+        android:layout_marginBottom="10dp">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/entity_id_input"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/hass_io_entity_id"
+            android:inputType="text" />
+
+    </com.google.android.material.textfield.TextInputLayout>
 
     <Button
         android:id="@+id/test_button"
@@ -52,7 +72,7 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/entity_id"
         android:layout_marginBottom="10dp"
-        android:text="@string/test_connection"/>
+        android:text="@string/test_connection" />
 
     <LinearLayout
         android:id="@+id/status_container"
@@ -62,19 +82,26 @@
         android:layout_marginBottom="15dp"
         android:orientation="horizontal">
 
+        <ImageView
+            android:id="@+id/status_drawable"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="6dp"
+            android:visibility="gone"/>
+
         <ProgressBar
             android:id="@+id/progress"
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:layout_marginEnd="10dp"
-            android:visibility="gone"/>
+            android:visibility="gone" />
 
         <TextView
             android:id="@+id/status"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
-            tools:text="Running connection test..."/>
+            tools:text="Running connection test..." />
 
     </LinearLayout>
 
@@ -82,10 +109,10 @@
         android:id="@+id/log"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:singleLine="false"
-        android:scrollbars="vertical"
+        android:layout_above="@+id/save"
         android:layout_below="@id/status_container"
-        android:layout_above="@+id/save"/>
+        android:scrollbars="vertical"
+        android:singleLine="false" />
 
     <Button
         android:id="@+id/save"
@@ -93,6 +120,6 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_marginTop="5dp"
-        android:text="Save and close"/>
+        android:text="Save and close" />
 
 </RelativeLayout>

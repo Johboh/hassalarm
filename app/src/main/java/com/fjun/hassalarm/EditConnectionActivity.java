@@ -4,21 +4,24 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.text.method.ScrollingMovementMethod;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SwitchCompat;
 
 import java.io.IOException;
+import java.util.Optional;
 
 import okhttp3.Request;
 import okhttp3.ResponseBody;
@@ -27,6 +30,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+import static com.fjun.hassalarm.Constants.DEFAULT_ENTITY_ID;
 import static com.fjun.hassalarm.Constants.KEY_PREFS_API_KEY;
 import static com.fjun.hassalarm.Constants.KEY_PREFS_ENTITY_ID;
 import static com.fjun.hassalarm.Constants.KEY_PREFS_HOST;
@@ -44,8 +48,9 @@ public class EditConnectionActivity extends AppCompatActivity {
     private EditText mHostEditText;
     private EditText mApiKeyEditText;
     private EditText mEntityIdEditText;
-    private CheckBox mIsToken;
-    private boolean mLastRunWasSuccessful;
+    private SwitchCompat mIsToken;
+    private ImageView mStatusImage;
+    private Boolean mLastRunWasSuccessful;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,21 +62,23 @@ public class EditConnectionActivity extends AppCompatActivity {
             mLastRunWasSuccessful = savedInstanceState.getBoolean(KEY_LAST_SUCCESSFUL, false);
         }
 
-        mHostEditText = findViewById(R.id.host);
-        mApiKeyEditText = findViewById(R.id.api_key);
-        mEntityIdEditText = findViewById(R.id.entity_id);
-        mIsToken = findViewById(R.id.isToken);
+        mHostEditText = findViewById(R.id.host_input);
+        mApiKeyEditText = findViewById(R.id.api_key_input);
+        mEntityIdEditText = findViewById(R.id.entity_id_input);
+        mIsToken = findViewById(R.id.is_token_input);
         mStatus = findViewById(R.id.status);
         mLog = findViewById(R.id.log);
         mLog.setMovementMethod(new ScrollingMovementMethod());
         mProgressBar = findViewById(R.id.progress);
+        mStatusImage = findViewById(R.id.status_drawable);
         findViewById(R.id.test_button).setOnClickListener(view -> runTest());
 
         // Set current saved host and api key.
         final SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         mHostEditText.setText(sharedPreferences.getString(KEY_PREFS_HOST, ""));
         mApiKeyEditText.setText(sharedPreferences.getString(KEY_PREFS_API_KEY, ""));
-        mEntityIdEditText.setText(sharedPreferences.getString(KEY_PREFS_ENTITY_ID, ""));
+        final String entityId = sharedPreferences.getString(KEY_PREFS_ENTITY_ID, DEFAULT_ENTITY_ID);
+        mEntityIdEditText.setText(TextUtils.isEmpty(entityId) ? DEFAULT_ENTITY_ID : entityId);
         mIsToken.setChecked(sharedPreferences.getBoolean(KEY_PREFS_IS_TOKEN,false));
 
         findViewById(R.id.save).setOnClickListener(v -> {
@@ -85,7 +92,9 @@ public class EditConnectionActivity extends AppCompatActivity {
                     .putBoolean(KEY_PREFS_IS_TOKEN, mIsToken.isChecked())
                     .apply();
             Toast.makeText(this, R.string.toast_saved, Toast.LENGTH_SHORT).show();
-            NextAlarmUpdaterJob.markAsDone(this, mLastRunWasSuccessful);
+            if (mLastRunWasSuccessful != null) {
+                NextAlarmUpdaterJob.markAsDone(this, mLastRunWasSuccessful);
+            }
             finish();
         });
     }
@@ -107,6 +116,7 @@ public class EditConnectionActivity extends AppCompatActivity {
 
     private void runTest() {
         mProgressBar.setVisibility(View.VISIBLE);
+        mStatusImage.setVisibility(View.GONE);
         mStatus.setText(R.string.status_running);
         mLog.setText("");
 
@@ -170,14 +180,23 @@ public class EditConnectionActivity extends AppCompatActivity {
 
     private void markAsDone(boolean successful) {
         mProgressBar.setVisibility(View.GONE);
-        mStatus.setText(R.string.status_done);
+        mStatusImage.setVisibility(View.VISIBLE);
+        if (successful) {
+            mStatus.setText(R.string.status_done_ok);
+            mStatusImage.setImageDrawable(getDrawable(R.drawable.ic_check_green_24dp));
+        } else {
+            mStatus.setText(R.string.status_done_failed);
+            mStatusImage.setImageDrawable(getDrawable(R.drawable.ic_error_outline_red_24dp));
+        }
         mLastRunWasSuccessful = successful;
     }
 
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putBoolean(KEY_LAST_SUCCESSFUL, mLastRunWasSuccessful);
+        if (mLastRunWasSuccessful != null) {
+            outState.putBoolean(KEY_LAST_SUCCESSFUL, mLastRunWasSuccessful);
+        }
     }
 
     public static Intent createIntent(Context context) {
