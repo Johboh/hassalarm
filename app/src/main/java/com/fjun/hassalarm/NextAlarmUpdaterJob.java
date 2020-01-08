@@ -34,7 +34,7 @@ import static com.fjun.hassalarm.Constants.PREFS_NAME;
 public class NextAlarmUpdaterJob extends JobService {
 
     private static final String BEARER_PATTERN = "Bearer %s";
-    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:00", Locale.US);
+    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:00", Locale.ENGLISH);
     private static final int MAX_EXECUTION_DELAY_MS = 3600 * 1000; // 1h
     static final int JOB_ID = 0;
 
@@ -138,11 +138,11 @@ public class NextAlarmUpdaterJob extends JobService {
 
         // No port number? Add default one.
         if (!host.contains(":")) {
-            host = String.format(Locale.getDefault(), "%s:%d", host, DEFAULT_PORT);
+            host = String.format(Locale.US, "%s:%d", host, DEFAULT_PORT);
         }
         // Default to http:// if there is no protocol defined.
         if (!host.startsWith("http://") && !host.startsWith("https://")) {
-            host = String.format(Locale.getDefault(), "http://%s", host);
+            host = String.format(Locale.US, "http://%s", host);
         }
 
         // Support empty API key, if there is no one required.
