@@ -10,18 +10,15 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.ProgressBar;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.SwitchCompat;
+
+import com.fjun.hassalarm.databinding.ActivityEditConnectionBinding;
+import com.fjun.hassalarm.databinding.ContentEditConnectionBinding;
 
 import java.io.IOException;
-import java.util.Optional;
 
 import okhttp3.Request;
 import okhttp3.ResponseBody;
@@ -41,55 +38,42 @@ public class EditConnectionActivity extends AppCompatActivity {
 
     private static final String KEY_LAST_SUCCESSFUL = "last_run_successful";
 
-    private TextView mStatus;
-    private TextView mLog;
-    private ProgressBar mProgressBar;
+    private ContentEditConnectionBinding mBinding;
     private Call<ResponseBody> mCall;
-    private EditText mHostEditText;
-    private EditText mApiKeyEditText;
-    private EditText mEntityIdEditText;
-    private SwitchCompat mIsToken;
-    private ImageView mStatusImage;
     private Boolean mLastRunWasSuccessful;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_edit_connection);
-        setSupportActionBar(findViewById(R.id.toolbar));
+        final ActivityEditConnectionBinding binding = ActivityEditConnectionBinding.inflate(getLayoutInflater());
+        setContentView(binding.root);
+        setSupportActionBar(binding.toolbar);
+        mBinding = binding.content;
 
         if (savedInstanceState != null) {
             mLastRunWasSuccessful = savedInstanceState.getBoolean(KEY_LAST_SUCCESSFUL, false);
         }
 
-        mHostEditText = findViewById(R.id.host_input);
-        mApiKeyEditText = findViewById(R.id.api_key_input);
-        mEntityIdEditText = findViewById(R.id.entity_id_input);
-        mIsToken = findViewById(R.id.is_token_input);
-        mStatus = findViewById(R.id.status);
-        mLog = findViewById(R.id.log);
-        mLog.setMovementMethod(new ScrollingMovementMethod());
-        mProgressBar = findViewById(R.id.progress);
-        mStatusImage = findViewById(R.id.status_drawable);
-        findViewById(R.id.test_button).setOnClickListener(view -> runTest());
+        mBinding.log.setMovementMethod(new ScrollingMovementMethod());
+        mBinding.testButton.setOnClickListener(view -> runTest());
 
         // Set current saved host and api key.
         final SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-        mHostEditText.setText(sharedPreferences.getString(KEY_PREFS_HOST, ""));
-        mApiKeyEditText.setText(sharedPreferences.getString(KEY_PREFS_API_KEY, ""));
+        mBinding.hostInput.setText(sharedPreferences.getString(KEY_PREFS_HOST, ""));
+        mBinding.apiKeyInput.setText(sharedPreferences.getString(KEY_PREFS_API_KEY, ""));
         final String entityId = sharedPreferences.getString(KEY_PREFS_ENTITY_ID, DEFAULT_ENTITY_ID);
-        mEntityIdEditText.setText(TextUtils.isEmpty(entityId) ? DEFAULT_ENTITY_ID : entityId);
-        mIsToken.setChecked(sharedPreferences.getBoolean(KEY_PREFS_IS_TOKEN,false));
+        mBinding.entityIdInput.setText(TextUtils.isEmpty(entityId) ? DEFAULT_ENTITY_ID : entityId);
+        mBinding.isTokenInput.setChecked(sharedPreferences.getBoolean(KEY_PREFS_IS_TOKEN, false));
 
         findViewById(R.id.save).setOnClickListener(v -> {
             if (mCall != null) {
                 mCall.cancel();
             }
             sharedPreferences.edit()
-                    .putString(KEY_PREFS_HOST, mHostEditText.getText().toString().trim())
-                    .putString(KEY_PREFS_API_KEY, mApiKeyEditText.getText().toString().trim())
-                    .putString(KEY_PREFS_ENTITY_ID, mEntityIdEditText.getText().toString().trim())
-                    .putBoolean(KEY_PREFS_IS_TOKEN, mIsToken.isChecked())
+                    .putString(KEY_PREFS_HOST, mBinding.hostInput.getText().toString().trim())
+                    .putString(KEY_PREFS_API_KEY, mBinding.apiKeyInput.getText().toString().trim())
+                    .putString(KEY_PREFS_ENTITY_ID, mBinding.entityIdInput.getText().toString().trim())
+                    .putBoolean(KEY_PREFS_IS_TOKEN, mBinding.isTokenInput.isChecked())
                     .apply();
             Toast.makeText(this, R.string.toast_saved, Toast.LENGTH_SHORT).show();
             if (mLastRunWasSuccessful != null) {
@@ -115,59 +99,59 @@ public class EditConnectionActivity extends AppCompatActivity {
     }
 
     private void runTest() {
-        mProgressBar.setVisibility(View.VISIBLE);
-        mStatusImage.setVisibility(View.GONE);
-        mStatus.setText(R.string.status_running);
-        mLog.setText("");
+        mBinding.progress.setVisibility(View.VISIBLE);
+        mBinding.statusDrawable.setVisibility(View.GONE);
+        mBinding.status.setText(R.string.status_running);
+        mBinding.log.setText("");
 
         try {
             mCall = NextAlarmUpdaterJob.createRequestCall(this,
-                    mHostEditText.getText().toString().trim(),
-                    mApiKeyEditText.getText().toString().trim(),
-                    mEntityIdEditText.getText().toString().trim(),
-                    mIsToken.isChecked());
+                    mBinding.hostInput.getText().toString().trim(),
+                    mBinding.apiKeyInput.getText().toString().trim(),
+                    mBinding.entityIdInput.getText().toString().trim(),
+                    mBinding.isTokenInput.isChecked());
 
-            mLog.append(getString(R.string.using_url, mCall.request().method(), mCall.request().url().toString()));
-            mLog.append(getString(R.string.headers, mCall.request().headers().toString()));
-            mLog.append(getString(R.string.body, requestBodyToString(mCall.request())));
+            mBinding.log.append(getString(R.string.using_url, mCall.request().method(), mCall.request().url().toString()));
+            mBinding.log.append(getString(R.string.headers, mCall.request().headers().toString()));
+            mBinding.log.append(getString(R.string.body, requestBodyToString(mCall.request())));
             mCall.enqueue(new Callback<ResponseBody>() {
                 @Override
                 public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                     boolean wasSuccessful = false;
                     try (ResponseBody body = response.body()) {
                         if (body != null) {
-                            mLog.append(getString(R.string.connection_ok, body.string()));
+                            mBinding.log.append(getString(R.string.connection_ok, body.string()));
                             wasSuccessful = true;
                         } else if (response.errorBody() != null) {
-                            mLog.append(getString(R.string.connection_failure, response.errorBody().string()));
+                            mBinding.log.append(getString(R.string.connection_failure, response.errorBody().string()));
                         } else {
-                            mLog.append(getString(R.string.connection_failure_code, response.code()));
+                            mBinding.log.append(getString(R.string.connection_failure_code, response.code()));
                         }
                     } catch (IOException e) {
-                        mLog.append(getString(R.string.connection_failure, e.getMessage()));
+                        mBinding.log.append(getString(R.string.connection_failure, e.getMessage()));
                     }
                     markAsDone(wasSuccessful);
                 }
 
                 @Override
                 public void onFailure(Call<ResponseBody> call, Throwable t) {
-                    mLog.append(getString(R.string.connection_failure, t.getMessage()));
+                    mBinding.log.append(getString(R.string.connection_failure, t.getMessage()));
                     markAsDone(false);
                 }
             });
         } catch (IllegalArgumentException e) {
-            mLog.append(e.getMessage() + "\n");
+            mBinding.log.append(e.getMessage() + "\n");
             markAsDone(false);
         }
 
         final InputMethodManager imm =
                 (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-        if (imm != null && mHostEditText != null) {
-            imm.hideSoftInputFromWindow(mHostEditText.getWindowToken(), 0);
+        if (imm != null) {
+            imm.hideSoftInputFromWindow(mBinding.hostInput.getWindowToken(), 0);
         }
     }
 
-    private static String requestBodyToString(final Request request){
+    private static String requestBodyToString(final Request request) {
         try {
             final Request copy = request.newBuilder().build();
             final Buffer buffer = new Buffer();
@@ -179,14 +163,14 @@ public class EditConnectionActivity extends AppCompatActivity {
     }
 
     private void markAsDone(boolean successful) {
-        mProgressBar.setVisibility(View.GONE);
-        mStatusImage.setVisibility(View.VISIBLE);
+        mBinding.progress.setVisibility(View.GONE);
+        mBinding.statusDrawable.setVisibility(View.VISIBLE);
         if (successful) {
-            mStatus.setText(R.string.status_done_ok);
-            mStatusImage.setImageDrawable(getDrawable(R.drawable.ic_check_green_24dp));
+            mBinding.status.setText(R.string.status_done_ok);
+            mBinding.statusDrawable.setImageDrawable(getDrawable(R.drawable.ic_check_green_24dp));
         } else {
-            mStatus.setText(R.string.status_done_failed);
-            mStatusImage.setImageDrawable(getDrawable(R.drawable.ic_error_outline_red_24dp));
+            mBinding.status.setText(R.string.status_done_failed);
+            mBinding.statusDrawable.setImageDrawable(getDrawable(R.drawable.ic_error_outline_red_24dp));
         }
         mLastRunWasSuccessful = successful;
     }

@@ -12,6 +12,9 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.fjun.hassalarm.databinding.ActivityMainBinding;
+import com.fjun.hassalarm.databinding.ContentMainBinding;
+
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
@@ -22,23 +25,17 @@ import static com.fjun.hassalarm.Constants.PREFS_NAME;
 
 public class MainActivity extends AppCompatActivity {
 
-    private TextView mEntityIdTextView;
-    private TextView mSuccessfulTextView;
-    private TextView mLastPublishAtTextView;
-    private TextView mNextAlarmTextView;
+    private ContentMainBinding mBinding;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        setSupportActionBar(findViewById(R.id.toolbar));
+        final ActivityMainBinding binding = ActivityMainBinding.inflate(getLayoutInflater());
+        setContentView(binding.root);
+        setSupportActionBar(binding.toolbar);
+        mBinding = binding.content;
 
-        mNextAlarmTextView = findViewById(R.id.next_alarm);
-        mEntityIdTextView = findViewById(R.id.entity_id);
-        mSuccessfulTextView = findViewById(R.id.successful);
-        mLastPublishAtTextView = findViewById(R.id.publish_at);
-
-        findViewById(R.id.edit_connection).setOnClickListener(v -> startActivity(EditConnectionActivity.createIntent(this)));
+        mBinding.editConnection.setOnClickListener(v -> startActivity(EditConnectionActivity.createIntent(this)));
 
         updateView();
 
@@ -72,23 +69,23 @@ public class MainActivity extends AppCompatActivity {
         final Long lastAttempt = sharedPreferences.getLong(Constants.LAST_PUBLISH_ATTEMPT, 0);
 
         if (wasSuccessful) {
-            mSuccessfulTextView.setText(R.string.published_successfully);
-            mLastPublishAtTextView.setVisibility(View.VISIBLE);
-            setLastPublishAt(mLastPublishAtTextView, lastAttempt);
-            mEntityIdTextView.setVisibility(View.VISIBLE);
+            mBinding.successful.setText(R.string.published_successfully);
+            mBinding.publishAt.setVisibility(View.VISIBLE);
+            setLastPublishAt(mBinding.publishAt, lastAttempt);
+            mBinding.entityId.setVisibility(View.VISIBLE);
             final String entityId = sharedPreferences.getString(KEY_PREFS_ENTITY_ID, "");
-            mEntityIdTextView.setText(getString(R.string.entity_id, TextUtils.isEmpty(entityId) ? DEFAULT_ENTITY_ID : entityId));
+            mBinding.entityId.setText(getString(R.string.entity_id, TextUtils.isEmpty(entityId) ? DEFAULT_ENTITY_ID : entityId));
         } else {
             if (lastAttempt > 0) {
-                mSuccessfulTextView.setText(R.string.failed_to_publish);
+                mBinding.successful.setText(R.string.failed_to_publish);
             } else {
-                mSuccessfulTextView.setText(R.string.failed_no_connection);
+                mBinding.successful.setText(R.string.failed_no_connection);
             }
-            mEntityIdTextView.setVisibility(View.GONE);
-            mLastPublishAtTextView.setVisibility(View.GONE);
+            mBinding.entityId.setVisibility(View.GONE);
+            mBinding.publishAt.setVisibility(View.GONE);
         }
 
-        showNextAlarm(mNextAlarmTextView);
+        showNextAlarm(mBinding.nextAlarm);
     }
 
     private void setLastPublishAt(TextView textView, Long time) {

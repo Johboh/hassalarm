@@ -1,6 +1,9 @@
 apply plugin: 'com.android.application'
 
 android {
+    viewBinding {
+        enabled = true
+    }
     compileSdkVersion 29
     defaultConfig {
         applicationId "com.fjun.hassalarm"
