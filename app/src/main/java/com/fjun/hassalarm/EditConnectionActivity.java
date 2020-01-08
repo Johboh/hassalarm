@@ -63,7 +63,7 @@ public class EditConnectionActivity extends AppCompatActivity {
         mBinding.apiKeyInput.setText(sharedPreferences.getString(KEY_PREFS_API_KEY, ""));
         final String entityId = sharedPreferences.getString(KEY_PREFS_ENTITY_ID, DEFAULT_ENTITY_ID);
         mBinding.entityIdInput.setText(TextUtils.isEmpty(entityId) ? DEFAULT_ENTITY_ID : entityId);
-        mBinding.isTokenInput.setChecked(sharedPreferences.getBoolean(KEY_PREFS_IS_TOKEN, false));
+        mBinding.isTokenInput.setChecked(sharedPreferences.getBoolean(KEY_PREFS_IS_TOKEN, true));
 
         findViewById(R.id.save).setOnClickListener(v -> {
             if (mCall != null) {

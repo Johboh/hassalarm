@@ -24,7 +24,7 @@
     <string name="help_text_about">About</string>
     <string name="published_successfully">Published Successfully</string>
     <string name="failed_to_publish">Publish failed, check connection details</string>
-    <string name="failed_no_connection">Missing Connection data, please Edit the Connection details</string>
+    <string name="failed_no_connection">Missing Connection data\nPlease Edit the Connection details</string>
     <string name="entity_id">Entity ID: %s</string>
     <string name="edit_connection">Edit Connection</string>
     <string name="edit_connection_label">Edit Connection</string>
