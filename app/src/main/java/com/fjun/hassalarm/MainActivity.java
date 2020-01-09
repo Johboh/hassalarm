@@ -3,7 +3,6 @@ package com.fjun.hassalarm;
 import android.app.AlarmManager;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -20,8 +19,6 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
 
-import static com.fjun.hassalarm.Constants.DEFAULT_ENTITY_ID;
-import static com.fjun.hassalarm.Constants.KEY_PREFS_ENTITY_ID;
 import static com.fjun.hassalarm.Constants.PREFS_NAME;
 
 public class MainActivity extends AppCompatActivity {
@@ -74,9 +71,6 @@ public class MainActivity extends AppCompatActivity {
             mBinding.successful.setText(R.string.published_successfully);
             mBinding.successfulPublishAt.setVisibility(View.GONE);
             setLastPublishAt(R.string.last_publish_at, mBinding.publishAt, lastAttempt);
-            mBinding.entityId.setVisibility(View.VISIBLE);
-            final String entityId = sharedPreferences.getString(KEY_PREFS_ENTITY_ID, "");
-            mBinding.entityId.setText(getString(R.string.entity_id, TextUtils.isEmpty(entityId) ? DEFAULT_ENTITY_ID : entityId));
         } else {
             if (lastAttempt > 0) {
                 mBinding.successful.setText(R.string.failed_to_publish);
@@ -88,8 +82,6 @@ public class MainActivity extends AppCompatActivity {
                 mBinding.successfulPublishAt.setVisibility(View.VISIBLE);
                 setLastPublishAt(R.string.last_successful_publish_at, mBinding.successfulPublishAt, lastSuccessfulAttempt);
             }
-
-            mBinding.entityId.setVisibility(View.GONE);
         }
 
         showNextAlarm(mBinding.nextAlarm);
