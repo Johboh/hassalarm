@@ -10,6 +10,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.StringRes;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.fjun.hassalarm.databinding.ActivityMainBinding;
@@ -67,11 +68,12 @@ public class MainActivity extends AppCompatActivity {
         final SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         final boolean wasSuccessful = sharedPreferences.getBoolean(Constants.LAST_PUBLISH_WAS_SUCCESSFUL, false);
         final Long lastAttempt = sharedPreferences.getLong(Constants.LAST_PUBLISH_ATTEMPT, 0);
+        final Long lastSuccessfulAttempt = sharedPreferences.getLong(Constants.LAST_SUCCESSFUL_PUBLISH, 0);
 
         if (wasSuccessful) {
             mBinding.successful.setText(R.string.published_successfully);
-            mBinding.publishAt.setVisibility(View.VISIBLE);
-            setLastPublishAt(mBinding.publishAt, lastAttempt);
+            mBinding.successfulPublishAt.setVisibility(View.GONE);
+            setLastPublishAt(R.string.last_publish_at, mBinding.publishAt, lastAttempt);
             mBinding.entityId.setVisibility(View.VISIBLE);
             final String entityId = sharedPreferences.getString(KEY_PREFS_ENTITY_ID, "");
             mBinding.entityId.setText(getString(R.string.entity_id, TextUtils.isEmpty(entityId) ? DEFAULT_ENTITY_ID : entityId));
@@ -81,17 +83,22 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 mBinding.successful.setText(R.string.failed_no_connection);
             }
+            setLastPublishAt(R.string.last_failed_publish_at, mBinding.publishAt, lastAttempt);
+            if (lastSuccessfulAttempt > 0) {
+                mBinding.successfulPublishAt.setVisibility(View.VISIBLE);
+                setLastPublishAt(R.string.last_successful_publish_at, mBinding.successfulPublishAt, lastSuccessfulAttempt);
+            }
+
             mBinding.entityId.setVisibility(View.GONE);
-            mBinding.publishAt.setVisibility(View.GONE);
         }
 
         showNextAlarm(mBinding.nextAlarm);
     }
 
-    private void setLastPublishAt(TextView textView, Long time) {
+    private void setLastPublishAt(@StringRes int res, TextView textView, Long time) {
         final Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(time);
-        textView.setText(getString(R.string.last_publish_at, new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(calendar.getTime())));
+        textView.setText(getString(res, new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(calendar.getTime())));
     }
 
     private void showNextAlarm(TextView textView) {

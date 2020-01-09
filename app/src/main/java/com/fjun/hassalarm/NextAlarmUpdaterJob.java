@@ -188,10 +188,14 @@ public class NextAlarmUpdaterJob extends JobService {
 
     public static void markAsDone(Context context, boolean successful) {
         final SharedPreferences sharedPreferences = context.getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-        sharedPreferences
+        final long timestamp = System.currentTimeMillis();
+        final SharedPreferences.Editor editor = sharedPreferences
                 .edit()
                 .putBoolean(Constants.LAST_PUBLISH_WAS_SUCCESSFUL, successful)
-                .putLong(Constants.LAST_PUBLISH_ATTEMPT, System.currentTimeMillis())
-                .apply();
+                .putLong(Constants.LAST_PUBLISH_ATTEMPT, timestamp);
+        if (successful) {
+            editor.putLong(Constants.LAST_SUCCESSFUL_PUBLISH, timestamp);
+        }
+        editor.apply();
     }
 }

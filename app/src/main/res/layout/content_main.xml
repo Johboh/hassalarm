@@ -29,17 +29,27 @@
         android:text="@string/last_publish_at"/>
 
     <TextView
+        android:id="@+id/successful_publish_at"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:layout_marginTop="4dp"
+        android:visibility="gone"
+        android:text="@string/last_successful_publish_at"/>
+
+    <TextView
         android:id="@+id/entity_id"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center_horizontal"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="8dp"
         android:text="@string/entity_id"/>
 
     <TextView
         android:id="@+id/next_alarm"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
         android:text="@string/next_alarm" />
 
     <Button
