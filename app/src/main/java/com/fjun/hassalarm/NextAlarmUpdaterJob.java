@@ -23,10 +23,8 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-import static com.fjun.hassalarm.Constants.DEFAULT_ENTITY_ID;
 import static com.fjun.hassalarm.Constants.DEFAULT_PORT;
 import static com.fjun.hassalarm.Constants.KEY_PREFS_API_KEY;
-import static com.fjun.hassalarm.Constants.KEY_PREFS_ENTITY_ID;
 import static com.fjun.hassalarm.Constants.KEY_PREFS_HOST;
 import static com.fjun.hassalarm.Constants.KEY_PREFS_IS_TOKEN;
 import static com.fjun.hassalarm.Constants.PREFS_NAME;
@@ -34,7 +32,8 @@ import static com.fjun.hassalarm.Constants.PREFS_NAME;
 public class NextAlarmUpdaterJob extends JobService {
 
     private static final String BEARER_PATTERN = "Bearer %s";
-    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:00", Locale.ENGLISH);
+    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH);
+    private static final SimpleDateFormat DATE_FORMAT_LEGACY = new SimpleDateFormat("yyyy-MM-dd HH:mm:00", Locale.ENGLISH);
     private static final int MAX_EXECUTION_DELAY_MS = 3600 * 1000; // 1h
     static final int JOB_ID = 0;
 
@@ -103,9 +102,10 @@ public class NextAlarmUpdaterJob extends JobService {
         final SharedPreferences sharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         String host = sharedPreferences.getString(KEY_PREFS_HOST, "");
         final String apiKeyOrToken = sharedPreferences.getString(KEY_PREFS_API_KEY, "");
-        final String entityId = sharedPreferences.getString(KEY_PREFS_ENTITY_ID, DEFAULT_ENTITY_ID);
+        final String entityId = Migration.getEntityId(sharedPreferences);
         final boolean isToken = sharedPreferences.getBoolean(KEY_PREFS_IS_TOKEN, false);
-        return createRequestCall(context, host, apiKeyOrToken, entityId, isToken);
+        final boolean entityIdIsLegacy = Migration.entityIdIsLegacy(sharedPreferences);
+        return createRequestCall(context, host, apiKeyOrToken, entityId, isToken, entityIdIsLegacy);
     }
 
     /**
@@ -116,20 +116,10 @@ public class NextAlarmUpdaterJob extends JobService {
                                                        String host,
                                                        String apiKeyOrToken,
                                                        String entityId,
-                                                       boolean isToken) throws IllegalArgumentException {
+                                                       boolean isToken,
+                                                       boolean entityIdIsLegacy) throws IllegalArgumentException {
         final AlarmManager alarmManager = context.getSystemService(AlarmManager.class);
         final AlarmManager.AlarmClockInfo alarmClockInfo = alarmManager.getNextAlarmClock();
-
-        // Get next scheduled alarm, if any.
-        final String time;
-        if (alarmClockInfo != null) {
-            final long timestamp = alarmClockInfo.getTriggerTime();
-            final Calendar calendar = Calendar.getInstance();
-            calendar.setTimeInMillis(timestamp);
-            time = DATE_FORMAT.format(calendar.getTime());
-        } else {
-            time = "";
-        }
 
         // Verify host and API key.
         if (TextUtils.isEmpty(host)) {
@@ -152,21 +142,36 @@ public class NextAlarmUpdaterJob extends JobService {
                 .build();
 
         final HassApi hassApi = retrofit.create(HassApi.class);
-        Log.d(Constants.LOG_TAG, "Setting time to " + time);
 
-        // Default to default entity id, if none is set.
-        if (TextUtils.isEmpty(entityId)) {
-            entityId = DEFAULT_ENTITY_ID;
+        // Get next scheduled alarm, if any.
+        final State state;
+        final Datetime datetime;
+        if (alarmClockInfo != null) {
+            final long timestamp = alarmClockInfo.getTriggerTime();
+            final Calendar calendar = Calendar.getInstance();
+            calendar.setTimeInMillis(timestamp);
+            state = new State(DATE_FORMAT_LEGACY.format(calendar.getTime()));
+            datetime = new Datetime(entityId, DATE_FORMAT.format(calendar.getTime()));
+        } else {
+            state = new State("");
+            datetime = new Datetime(entityId, "");
         }
+        Log.d(Constants.LOG_TAG, "Setting time to " + datetime.datetime);
 
         // Enqueue call and run on background thread.
         // Check if it is using long lived access tokens
         if (isToken) {
             // Create Authorization Header value
             String bearer = String.format(BEARER_PATTERN, apiKeyOrToken);
-            return hassApi.updateStateUsingToken(new State(time), entityId, bearer);
+            if (entityIdIsLegacy) {
+                return hassApi.updateStateUsingToken(state, entityId, bearer);
+            }
+            return hassApi.setInputDatetimeUsingToken(datetime, bearer);
         } else {
-            return hassApi.updateStateUsingApiKey(new State(time), entityId, apiKeyOrToken);
+            if (entityIdIsLegacy) {
+                return hassApi.updateStateUsingApiKey(state, entityId, apiKeyOrToken);
+            }
+            return hassApi.setInputDatetimeUsingApiKey(datetime, apiKeyOrToken);
         }
     }
 

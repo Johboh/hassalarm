@@ -18,4 +18,10 @@ public interface HassApi {
 
     @POST("/api/states/{entity_id}")
     Call<ResponseBody> updateStateUsingToken(@Body State state, @Path("entity_id") String entity_id, @Header("Authorization") String token);
+
+    @POST("/api/services/input_datetime/set_datetime")
+    Call<ResponseBody> setInputDatetimeUsingApiKey(@Body Datetime datetime, @Header("x-ha-access") String apiKey);
+
+    @POST("/api/services/input_datetime/set_datetime")
+    Call<ResponseBody> setInputDatetimeUsingToken(@Body Datetime datetime, @Header("Authorization") String token);
 }

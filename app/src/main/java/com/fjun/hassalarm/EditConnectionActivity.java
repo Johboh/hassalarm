@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.text.method.ScrollingMovementMethod;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -27,7 +26,6 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-import static com.fjun.hassalarm.Constants.DEFAULT_ENTITY_ID;
 import static com.fjun.hassalarm.Constants.KEY_PREFS_API_KEY;
 import static com.fjun.hassalarm.Constants.KEY_PREFS_ENTITY_ID;
 import static com.fjun.hassalarm.Constants.KEY_PREFS_HOST;
@@ -61,9 +59,11 @@ public class EditConnectionActivity extends AppCompatActivity {
         final SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         mBinding.hostInput.setText(sharedPreferences.getString(KEY_PREFS_HOST, ""));
         mBinding.apiKeyInput.setText(sharedPreferences.getString(KEY_PREFS_API_KEY, ""));
-        final String entityId = sharedPreferences.getString(KEY_PREFS_ENTITY_ID, DEFAULT_ENTITY_ID);
-        mBinding.entityIdInput.setText(TextUtils.isEmpty(entityId) ? DEFAULT_ENTITY_ID : entityId);
         mBinding.isTokenInput.setChecked(sharedPreferences.getBoolean(KEY_PREFS_IS_TOKEN, true));
+
+        // Migration of old versions to new versions
+        mBinding.entityIdInput.setText(Migration.getEntityId(sharedPreferences));
+        mBinding.isEntityLegacy.setChecked(Migration.entityIdIsLegacy(sharedPreferences));
 
         findViewById(R.id.save).setOnClickListener(v -> {
             if (mCall != null) {
@@ -109,7 +109,8 @@ public class EditConnectionActivity extends AppCompatActivity {
                     mBinding.hostInput.getText().toString().trim(),
                     mBinding.apiKeyInput.getText().toString().trim(),
                     mBinding.entityIdInput.getText().toString().trim(),
-                    mBinding.isTokenInput.isChecked());
+                    mBinding.isTokenInput.isChecked(),
+                    mBinding.isEntityLegacy.isChecked());
 
             mBinding.log.append(getString(R.string.using_url, mCall.request().method(), mCall.request().url().toString()));
             mBinding.log.append(getString(R.string.headers, mCall.request().headers().toString()));

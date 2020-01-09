@@ -66,11 +66,20 @@
 
     </com.google.android.material.textfield.TextInputLayout>
 
+    <androidx.appcompat.widget.SwitchCompat
+        android:id="@+id/is_entity_legacy"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/entity_id"
+        android:layout_marginBottom="10dp"
+        android:checked="true"
+        android:text="@string/is_input_legacy" />
+
     <Button
         android:id="@+id/test_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/entity_id"
+        android:layout_below="@id/is_entity_legacy"
         android:layout_marginBottom="10dp"
         android:text="@string/test_connection" />
 
@@ -87,7 +96,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="6dp"
-            android:visibility="gone"/>
+            android:visibility="gone" />
 
         <ProgressBar
             android:id="@+id/progress"

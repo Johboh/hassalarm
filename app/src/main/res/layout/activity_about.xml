@@ -1,40 +1,58 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/root"
+    android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="12dp"
-    android:id="@+id/root">
-    <TextView
-        android:id="@+id/help_text_about"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:text="@string/help_text_about"
-        android:textStyle="bold"
-        android:textSize="18sp" />
+    android:fillViewport="true">
 
-    <TextView
-        android:id="@+id/help_text_first"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        android:text="@string/help_text_first"
-        android:textSize="18sp" />
+        android:orientation="vertical"
+        android:padding="12dp">
 
-    <TextView
-        android:id="@+id/help_text_second"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        android:text="@string/help_text_second"
-        android:textSize="18sp" />
+        <TextView
+            android:id="@+id/help_text_about"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="@string/help_text_about"
+            android:textSize="18sp"
+            android:textStyle="bold" />
 
-    <TextView
-        android:id="@+id/help_text_third"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        android:text="@string/help_text_third"
-        android:autoLink="web"
-        android:textSize="18sp" />
-</LinearLayout>
+        <TextView
+            android:id="@+id/help_text_first"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:text="@string/help_text_first"
+            android:textSize="18sp" />
+
+        <TextView
+            android:id="@+id/help_text_second"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:autoLink="web"
+            android:text="@string/help_text_second"
+            android:textSize="18sp" />
+
+        <TextView
+            android:id="@+id/help_text_third"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:autoLink="web"
+            android:text="@string/help_text_third"
+            android:textSize="18sp" />
+
+        <TextView
+            android:id="@+id/help_text_fourth"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:autoLink="web"
+            android:text="@string/help_text_fourth"
+            android:textSize="18sp" />
+    </LinearLayout>
+</ScrollView>
