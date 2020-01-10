@@ -3,12 +3,10 @@
     <string name="no_scheduled_alarm">No next alarm scheduled.</string>
     <string name="hass_io_host_name_ip">Home Assistant host name/IP</string>
     <string name="hass_io_api_key">Home Assistant longed-lived token or API key</string>
-    <string name="save">Save and test connection</string>
     <string name="next_alarm">Next scheduled alarm %s</string>
     <string name="toast_saved">Connection details saved.</string>
     <string name="hass_io_entity_id">Entity ID</string>
     <string name="long_lived_access_token">Above value is longed-lived token</string>
-    <string name="button_close">Close</string>
     <string name="status_running">Running connection test…</string>
     <string name="status_done_ok">Connection successful.</string>
     <string name="status_done_failed">Connection failed, see log.</string>
@@ -26,7 +24,6 @@
     <string name="published_successfully">Published Successfully</string>
     <string name="failed_to_publish">Publish failed, check connection details</string>
     <string name="failed_no_connection">Missing Connection data\nPlease Edit the Connection details</string>
-    <string name="entity_id">Entity ID: %s</string>
     <string name="edit_connection">Edit Connection</string>
     <string name="edit_connection_label">Edit Connection</string>
     <string name="last_publish_at">Last publish at %s</string>
