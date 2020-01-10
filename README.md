@@ -26,7 +26,7 @@ Once that happen, a call to your Hass.io instance will happen within an hour, gi
   automation:
     trigger:
       platform: template
-      value_template: "{{ states('sensor.date_time') == (state_attr('input_datetime.next_alarm', 'timestamp') | int | timestamp_custom('%Y-%m-%d %H:%M', True)) }}"
+      value_template: "{{ states('sensor.date_time') == (state_attr('input_datetime.next_alarm', 'timestamp') | int | timestamp_custom('%Y-%m-%d, %H:%M', True)) }}"
     action:
       service: light.turn_on
       entity_id: light.bedroom
