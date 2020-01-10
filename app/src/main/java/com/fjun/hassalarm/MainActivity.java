@@ -78,6 +78,7 @@ public class MainActivity extends AppCompatActivity {
                 mBinding.successful.setText(R.string.failed_no_connection);
             }
             setLastPublishAt(R.string.last_failed_publish_at, mBinding.publishAt, lastAttempt);
+            mBinding.publishAt.setVisibility(lastAttempt > 0 ? View.VISIBLE : View.GONE);
             if (lastSuccessfulAttempt > 0) {
                 mBinding.successfulPublishAt.setVisibility(View.VISIBLE);
                 setLastPublishAt(R.string.last_successful_publish_at, mBinding.successfulPublishAt, lastSuccessfulAttempt);
