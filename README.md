@@ -13,20 +13,23 @@ Once that happen, a call to your Hass.io instance will happen within an hour, gi
       has_date: true
       has_time: true
   ```
-2. If you want the value to persist on Home Assistant restarts, enable the [History](https://www.home-assistant.io/integrations/history/) and [Recorder](https://www.home-assistant.io/integrations/recorder) components.
-3. Add some automation for your new input:
+1. Add a time sensor in your `configuration.xml`:
+  ```
+  sensor:
+  - platform: time_date
+    display_options:
+      - 'date_time'
+  ```
+1. If you want the value to persist on Home Assistant restarts, enable the [History](https://www.home-assistant.io/integrations/history/) and [Recorder](https://www.home-assistant.io/integrations/recorder) components.
+1. Add some automation for your new input:
   ```yaml
+  automation:
     trigger:
-    - minutes: /1
-      platform: time_pattern
-      seconds: 0
-    condition:
-    - condition: template
-      value_template: '{{ (((as_timestamp(now()) | int) + 3*60) | timestamp_custom("%Y-%m-%d %H:%M:00")) == states.sensor.next_alarm.state }}'
+      platform: template
+      value_template: "{{ states('sensor.date_time') == (state_attr('input_datetime.next_alarm', 'timestamp') | int | timestamp_custom('%Y-%m-%d %H:%M', True)) }}"
     action:
-    - data:
-        entity_id: scene.wakeup
-      service: scene.turn_on
+      service: light.turn_on
+      entity_id: light.bedroom
   ```
 
 ## App usage
