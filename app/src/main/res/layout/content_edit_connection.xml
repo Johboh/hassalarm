@@ -42,19 +42,19 @@
     </com.google.android.material.textfield.TextInputLayout>
 
     <androidx.appcompat.widget.SwitchCompat
-        android:id="@+id/is_token_input"
+        android:id="@+id/is_api_input"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/api_key"
         android:layout_marginBottom="10dp"
-        android:checked="true"
-        android:text="@string/long_lived_access_token" />
+        android:checked="false"
+        android:text="@string/is_legacy_api_key" />
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/entity_id"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/is_token_input"
+        android:layout_below="@id/is_api_input"
         android:layout_marginBottom="10dp">
 
         <com.google.android.material.textfield.TextInputEditText

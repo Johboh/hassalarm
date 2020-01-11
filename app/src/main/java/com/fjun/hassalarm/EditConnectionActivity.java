@@ -59,7 +59,7 @@ public class EditConnectionActivity extends AppCompatActivity {
         final SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         mBinding.hostInput.setText(sharedPreferences.getString(KEY_PREFS_HOST, ""));
         mBinding.apiKeyInput.setText(sharedPreferences.getString(KEY_PREFS_API_KEY, ""));
-        mBinding.isTokenInput.setChecked(sharedPreferences.getBoolean(KEY_PREFS_IS_TOKEN, true));
+        mBinding.isApiInput.setChecked(!sharedPreferences.getBoolean(KEY_PREFS_IS_TOKEN, true));
 
         // Migration of old versions to new versions
         mBinding.entityIdInput.setText(Migration.getEntityId(sharedPreferences));
@@ -73,7 +73,7 @@ public class EditConnectionActivity extends AppCompatActivity {
                     .putString(KEY_PREFS_HOST, mBinding.hostInput.getText().toString().trim())
                     .putString(KEY_PREFS_API_KEY, mBinding.apiKeyInput.getText().toString().trim())
                     .putString(KEY_PREFS_ENTITY_ID, mBinding.entityIdInput.getText().toString().trim())
-                    .putBoolean(KEY_PREFS_IS_TOKEN, mBinding.isTokenInput.isChecked())
+                    .putBoolean(KEY_PREFS_IS_TOKEN, !mBinding.isApiInput.isChecked())
                     .apply();
             Toast.makeText(this, R.string.toast_saved, Toast.LENGTH_SHORT).show();
             if (mLastRunWasSuccessful != null) {
@@ -109,7 +109,7 @@ public class EditConnectionActivity extends AppCompatActivity {
                     mBinding.hostInput.getText().toString().trim(),
                     mBinding.apiKeyInput.getText().toString().trim(),
                     mBinding.entityIdInput.getText().toString().trim(),
-                    mBinding.isTokenInput.isChecked(),
+                    !mBinding.isApiInput.isChecked(),
                     mBinding.isEntityLegacy.isChecked());
 
             mBinding.log.append(getString(R.string.using_url, mCall.request().method(), mCall.request().url().toString()));
