@@ -32,6 +32,19 @@ Once that happen, a call to your Hass.io instance will happen within an hour, gi
       entity_id: light.bedroom
   ```
 
+Or if you want to trigger an automation five minutes before the alarm will go off:
+```yaml
+  automation:
+    trigger:
+      platform: template
+      value_template: "{{ ((as_timestamp(states('sensor.date_time').replace(',','')) | int) + 5*60) == (state_attr('input_datetime.next_alarm', 'timestamp') | int)  }}"
+
+    action:
+      service: light.turn_on
+      entity_id: light.bedroom
+```
+
+
 ## App usage
 1. Install via [Google Play Store](https://play.google.com/store/apps/details?id=com.fjun.hassalarm) or clone the repo and build the app: `./gradlew installDebug`
 1. Create a [long lived token](https://www.home-assistant.io/docs/authentication/#your-account-profile) on your profile in Home Assistant.
