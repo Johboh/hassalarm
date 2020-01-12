@@ -2,11 +2,11 @@
     <string name="app_name">Hassalarm</string>
     <string name="no_scheduled_alarm">No next alarm scheduled.</string>
     <string name="hass_io_host_name_ip">Home Assistant host name/IP</string>
-    <string name="hass_io_api_key">Home Assistant longed-lived token or legacy API key</string>
+    <string name="hass_io_api_key">Home Assistant long lived token or legacy API key</string>
     <string name="next_alarm">Next scheduled alarm %s</string>
     <string name="toast_saved">Connection details saved.</string>
     <string name="hass_io_entity_id">Entity ID</string>
-    <string name="is_legacy_api_key">Above value is legacy API key instead of longed-lived token</string>
+    <string name="is_legacy_api_key">Above value is legacy API key instead of long lived token</string>
     <string name="status_running">Running connection test…</string>
     <string name="status_done_ok">Connection successful.</string>
     <string name="status_done_failed">Connection failed, see log.</string>
@@ -15,7 +15,7 @@
     <string name="body">Request body: %s\n\n</string>
     <string name="help_text_first">This app listen for changes to the next scheduled alarm, reported by the OS. Decent alarm clock apps will report their next scheduled alarm to the OS. This app will sync the next alarm within an hour from when the next scheduled alarm changes.</string>
     <string name="help_text_second">Start by editing your connection details for Home Assistant under \"Edit Connection\". Enter hostname, your long lived API token and the full entity ID name for your input_datetime input e.g. \"input_datetime.next_alarm\". Read more on how to configure a input_datetime that has both date and time in Home Assistant here: https://github.com/Johboh/hassalarm</string>
-    <string name="help_text_third">For legacy reasons, you can also publish the next alarm as normal sensor using the format yyyy-MM-dd HH:mm:00 (for example using entity ID sensor.next_alarm) and also using a API key instead of the recommended long lived token. This app will eventually drop support for this and input_datetime and longed lived token will be the only supported way (or any new ways).</string>
+    <string name="help_text_third">For legacy reasons, you can also publish the next alarm as normal sensor using the format yyyy-MM-dd HH:mm:00 (for example using entity ID sensor.next_alarm) and also using a API key instead of the recommended long lived token. This app will eventually drop support for this and input_datetime and long lived token will be the only supported way (or any new ways).</string>
     <string name="help_text_fourth">Home Assistant configuration help, questions or issues, visit https://github.com/Johboh/hassalarm</string>
     <string name="connection_ok">Success, response: %s\n</string>
     <string name="connection_failure">Failure: %s\n</string>
@@ -38,7 +38,7 @@
     <string name="unsaved_changes_cancel">Cancel</string>
     <string name="copy_full_log">Copy full log</string>
     <string name="copy_anonymous_log">Copy anonymous log</string>
-    <string name="log_using_token">Using long-lived token</string>
+    <string name="log_using_token">Using long lived token</string>
     <string name="log_using_api_key">Using legacy API key</string>
     <string name="log_entity_id_is_legacy_sensor">Entity ID is of type legacy sensor</string>
     <string name="log_entity_id_is_input_datetime">Entity ID is of type input_datetime</string>
