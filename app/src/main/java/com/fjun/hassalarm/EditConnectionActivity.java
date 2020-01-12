@@ -159,7 +159,7 @@ public class EditConnectionActivity extends AppCompatActivity {
         final boolean entityIdIsLegacy = mBinding.isEntityLegacy.isChecked();
 
         mBinding.log.append((isToken ? getString(R.string.log_using_token) : getString(R.string.log_using_api_key)) + "\n");
-        mBinding.log.append((entityIdIsLegacy ? getString(R.string.log_entity_id_is_input_datetime) : getString(R.string.log_entity_id_is_legacy_sensor)) + "\n");
+        mBinding.log.append((entityIdIsLegacy ? getString(R.string.log_entity_id_is_legacy_sensor) : getString(R.string.log_entity_id_is_input_datetime)) + "\n");
 
         try {
             mCall = NextAlarmUpdaterJob.createRequestCall(this,
