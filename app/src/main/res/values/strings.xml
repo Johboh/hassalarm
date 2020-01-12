@@ -36,4 +36,10 @@
     <string name="unsaved_changes_message">You have unsaved changes. Do you want to discard them?</string>
     <string name="unsaved_changes_discard">Discard</string>
     <string name="unsaved_changes_cancel">Cancel</string>
+    <string name="copy_full_log">Copy full log</string>
+    <string name="copy_anonymous_log">Copy anonymous log</string>
+    <string name="log_using_token">Using long-lived token</string>
+    <string name="log_using_api_key">Using legacy API key</string>
+    <string name="log_entity_id_is_legacy_sensor">Entity ID is of type legacy sensor</string>
+    <string name="log_entity_id_is_input_datetime">Entity ID is of type input_datetime</string>
 </resources>

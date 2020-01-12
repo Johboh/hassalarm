@@ -1,11 +1,14 @@
 package com.fjun.hassalarm;
 
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.text.method.ScrollingMovementMethod;
+import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -42,6 +45,7 @@ public class EditConnectionActivity extends AppCompatActivity {
     private ContentEditConnectionBinding mBinding;
     private Call<ResponseBody> mCall;
     private Boolean mLastRunWasSuccessful;
+    private String mStrippedLog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,7 +72,7 @@ public class EditConnectionActivity extends AppCompatActivity {
         mBinding.entityIdInput.setText(Migration.getEntityId(sharedPreferences));
         mBinding.isEntityLegacy.setChecked(Migration.entityIdIsLegacy(sharedPreferences));
 
-        findViewById(R.id.save).setOnClickListener(v -> {
+        mBinding.save.setOnClickListener(v -> {
             if (mCall != null) {
                 mCall.cancel();
             }
@@ -85,6 +89,26 @@ public class EditConnectionActivity extends AppCompatActivity {
             }
             finish();
         });
+
+        mBinding.log.setOnLongClickListener(View::showContextMenu);
+    }
+
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo);
+        if (v.getId() == R.id.log) {
+            final ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+            menu.add(R.string.copy_full_log).setOnMenuItemClickListener(item -> {
+                clipboard.setPrimaryClip(ClipData.newPlainText("Hassalarm full connection log", mBinding.log.getText().toString()));
+                return true;
+            });
+            if (!TextUtils.isEmpty(mStrippedLog)) {
+                menu.add(R.string.copy_anonymous_log).setOnMenuItemClickListener(item -> {
+                    clipboard.setPrimaryClip(ClipData.newPlainText("Hassalarm anonymous connection log", mStrippedLog));
+                    return true;
+                });
+            }
+        }
     }
 
     @Override
@@ -126,40 +150,50 @@ public class EditConnectionActivity extends AppCompatActivity {
         mBinding.statusDrawable.setVisibility(View.GONE);
         mBinding.status.setText(R.string.status_running);
         mBinding.log.setText("");
+        mStrippedLog = "";
+
+        final String host = mBinding.hostInput.getText().toString().trim();
+        final String token = mBinding.apiKeyInput.getText().toString().trim();
+        final String entityId = mBinding.entityIdInput.getText().toString().trim();
+        final boolean isToken = !mBinding.isApiInput.isChecked();
+        final boolean entityIdIsLegacy = mBinding.isEntityLegacy.isChecked();
+
+        mBinding.log.append((isToken ? getString(R.string.log_using_token) : getString(R.string.log_using_api_key)) + "\n");
+        mBinding.log.append((entityIdIsLegacy ? getString(R.string.log_entity_id_is_input_datetime) : getString(R.string.log_entity_id_is_legacy_sensor)) + "\n");
 
         try {
             mCall = NextAlarmUpdaterJob.createRequestCall(this,
-                    mBinding.hostInput.getText().toString().trim(),
-                    mBinding.apiKeyInput.getText().toString().trim(),
-                    mBinding.entityIdInput.getText().toString().trim(),
-                    !mBinding.isApiInput.isChecked(),
-                    mBinding.isEntityLegacy.isChecked());
+                    host,
+                    token,
+                    entityId,
+                    isToken,
+                    entityIdIsLegacy);
 
-            mBinding.log.append(getString(R.string.using_url, mCall.request().method(), mCall.request().url().toString()));
-            mBinding.log.append(getString(R.string.headers, mCall.request().headers().toString()));
-            mBinding.log.append(getString(R.string.body, requestBodyToString(mCall.request())));
+            mBinding.log.append(getString(R.string.using_url, mCall.request().method(), mCall.request().url().toString()) + "\n");
+            mBinding.log.append(getString(R.string.headers, mCall.request().headers().toString()) + "\n");
+            mBinding.log.append(getString(R.string.body, requestBodyToString(mCall.request())) + "\n");
             mCall.enqueue(new Callback<ResponseBody>() {
                 @Override
                 public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                     boolean wasSuccessful = false;
                     try (ResponseBody body = response.body()) {
                         if (body != null) {
-                            mBinding.log.append(getString(R.string.connection_ok, body.string()));
+                            mBinding.log.append(getString(R.string.connection_ok, body.string()) + "\n");
                             wasSuccessful = true;
                         } else if (response.errorBody() != null) {
-                            mBinding.log.append(getString(R.string.connection_failure, response.errorBody().string()));
+                            mBinding.log.append(getString(R.string.connection_failure, response.errorBody().string()) + "\n");
                         } else {
-                            mBinding.log.append(getString(R.string.connection_failure_code, response.code()));
+                            mBinding.log.append(getString(R.string.connection_failure_code, response.code()) + "\n");
                         }
                     } catch (IOException e) {
-                        mBinding.log.append(getString(R.string.connection_failure, e.getMessage()));
+                        mBinding.log.append(getString(R.string.connection_failure, e.getMessage()) + "\n");
                     }
                     markAsDone(wasSuccessful);
                 }
 
                 @Override
                 public void onFailure(Call<ResponseBody> call, Throwable t) {
-                    mBinding.log.append(getString(R.string.connection_failure, t.getMessage()));
+                    mBinding.log.append(getString(R.string.connection_failure, t.getMessage()) + "\n");
                     markAsDone(false);
                 }
             });
@@ -167,6 +201,10 @@ public class EditConnectionActivity extends AppCompatActivity {
             mBinding.log.append(e.getMessage() + "\n");
             markAsDone(false);
         }
+
+        mStrippedLog = mBinding.log.getText().toString()
+                .replace(host, "<host>")
+                .replace(token, "<token>");
 
         final InputMethodManager imm =
                 (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -197,6 +235,7 @@ public class EditConnectionActivity extends AppCompatActivity {
             mBinding.statusDrawable.setImageDrawable(getDrawable(R.drawable.ic_error_outline_red_24dp));
         }
         mLastRunWasSuccessful = successful;
+        registerForContextMenu(mBinding.log);
     }
 
     @Override
