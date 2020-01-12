@@ -32,4 +32,8 @@
     <string name="test_connection">Test Connection</string>
     <string name="action_about">About</string>
     <string name="is_input_legacy">Entity ID is legacy sensor instead of input_datetime (see About)</string>
+    <string name="unsaved_changes_title">Discard changes?</string>
+    <string name="unsaved_changes_message">You have unsaved changes. Do you want to discard them?</string>
+    <string name="unsaved_changes_discard">Discard</string>
+    <string name="unsaved_changes_cancel">Cancel</string>
 </resources>

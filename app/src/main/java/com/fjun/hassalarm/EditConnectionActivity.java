@@ -1,6 +1,7 @@
 package com.fjun.hassalarm;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -16,6 +17,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.fjun.hassalarm.databinding.ActivityEditConnectionBinding;
 import com.fjun.hassalarm.databinding.ContentEditConnectionBinding;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.io.IOException;
 
@@ -83,6 +85,25 @@ public class EditConnectionActivity extends AppCompatActivity {
             }
             finish();
         });
+    }
+
+    @Override
+    public void onBackPressed() {
+        final SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        if (!sharedPreferences.getString(KEY_PREFS_HOST, "").equals(mBinding.hostInput.getText().toString().trim()) ||
+                !sharedPreferences.getString(KEY_PREFS_API_KEY, "").equals(mBinding.apiKeyInput.getText().toString().trim()) ||
+                !Migration.getEntityId(sharedPreferences).equals(mBinding.entityIdInput.getText().toString().trim()) ||
+                Migration.entityIdIsLegacy(sharedPreferences) != mBinding.isEntityLegacy.isChecked() ||
+                sharedPreferences.getBoolean(KEY_PREFS_IS_TOKEN, true) == mBinding.isApiInput.isChecked()) {
+            new MaterialAlertDialogBuilder(this)
+                    .setTitle(R.string.unsaved_changes_title)
+                    .setMessage(R.string.unsaved_changes_message)
+                    .setPositiveButton(R.string.unsaved_changes_discard, (dialog, which) -> finish())
+                    .setNeutralButton(R.string.unsaved_changes_cancel, null)
+                    .show();
+        } else {
+            super.onBackPressed();
+        }
     }
 
     @Override
