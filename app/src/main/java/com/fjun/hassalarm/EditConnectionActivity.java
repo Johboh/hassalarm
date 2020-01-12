@@ -29,6 +29,7 @@ import retrofit2.Response;
 import static com.fjun.hassalarm.Constants.KEY_PREFS_API_KEY;
 import static com.fjun.hassalarm.Constants.KEY_PREFS_ENTITY_ID;
 import static com.fjun.hassalarm.Constants.KEY_PREFS_HOST;
+import static com.fjun.hassalarm.Constants.KEY_PREFS_IS_ENTITY_ID_LEGACY;
 import static com.fjun.hassalarm.Constants.KEY_PREFS_IS_TOKEN;
 import static com.fjun.hassalarm.Constants.PREFS_NAME;
 
@@ -74,6 +75,7 @@ public class EditConnectionActivity extends AppCompatActivity {
                     .putString(KEY_PREFS_API_KEY, mBinding.apiKeyInput.getText().toString().trim())
                     .putString(KEY_PREFS_ENTITY_ID, mBinding.entityIdInput.getText().toString().trim())
                     .putBoolean(KEY_PREFS_IS_TOKEN, !mBinding.isApiInput.isChecked())
+                    .putBoolean(KEY_PREFS_IS_ENTITY_ID_LEGACY, mBinding.isEntityLegacy.isChecked())
                     .apply();
             Toast.makeText(this, R.string.toast_saved, Toast.LENGTH_SHORT).show();
             if (mLastRunWasSuccessful != null) {
