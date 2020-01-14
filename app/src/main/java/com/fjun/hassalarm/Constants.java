@@ -16,5 +16,6 @@ interface Constants {
     String LAST_PUBLISH_ATTEMPT = "last_publish_attempt";
     String LAST_SUCCESSFUL_PUBLISH = "last_successful_publish";
     String LAST_PUBLISH_WAS_SUCCESSFUL = "last_publish_was_successful";
+    String LAST_PUBLISHED_TRIGGER_TIMESTAMP = "last_published_trigger_timestamp";
     int DEFAULT_PORT = 8123;
 }

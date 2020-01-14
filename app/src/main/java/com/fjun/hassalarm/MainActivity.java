@@ -64,24 +64,33 @@ public class MainActivity extends AppCompatActivity {
     private void updateView() {
         final SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         final boolean wasSuccessful = sharedPreferences.getBoolean(Constants.LAST_PUBLISH_WAS_SUCCESSFUL, false);
-        final Long lastAttempt = sharedPreferences.getLong(Constants.LAST_PUBLISH_ATTEMPT, 0);
-        final Long lastSuccessfulAttempt = sharedPreferences.getLong(Constants.LAST_SUCCESSFUL_PUBLISH, 0);
+        final long lastAttempt = sharedPreferences.getLong(Constants.LAST_PUBLISH_ATTEMPT, 0);
+        final long lastSuccessfulAttempt = sharedPreferences.getLong(Constants.LAST_SUCCESSFUL_PUBLISH, 0);
+        final long lastPublishedTriggerTime = sharedPreferences.getLong(Constants.LAST_PUBLISHED_TRIGGER_TIMESTAMP, -1);
+        final long triggerTime = getTriggerTime();
 
         if (wasSuccessful) {
             mBinding.successful.setText(R.string.published_successfully);
             mBinding.successfulPublishAt.setVisibility(View.GONE);
             setLastPublishAt(R.string.last_publish_at, mBinding.publishAt, lastAttempt);
+        } else if (triggerTime > 0 && triggerTime == lastPublishedTriggerTime) {
+            // If last run was not successful, but if there has been a successful run that published the
+            // value of next scheduled alarm, then we are considered successful.
+            mBinding.successful.setText(R.string.published_successfully);
+            mBinding.successfulPublishAt.setVisibility(View.GONE);
+            setLastPublishAt(R.string.last_successful_publish_at, mBinding.publishAt, lastSuccessfulAttempt);
         } else {
             if (lastAttempt > 0) {
                 mBinding.successful.setText(R.string.failed_to_publish);
+                setLastPublishAt(R.string.last_failed_publish_at, mBinding.publishAt, lastAttempt);
             } else {
                 mBinding.successful.setText(R.string.failed_no_connection);
+                mBinding.publishAt.setVisibility(View.GONE);
             }
-            setLastPublishAt(R.string.last_failed_publish_at, mBinding.publishAt, lastAttempt);
-            mBinding.publishAt.setVisibility(lastAttempt > 0 ? View.VISIBLE : View.GONE);
             if (lastSuccessfulAttempt > 0) {
-                mBinding.successfulPublishAt.setVisibility(View.VISIBLE);
                 setLastPublishAt(R.string.last_successful_publish_at, mBinding.successfulPublishAt, lastSuccessfulAttempt);
+            } else {
+                mBinding.successfulPublishAt.setVisibility(View.GONE);
             }
         }
 
@@ -92,18 +101,23 @@ public class MainActivity extends AppCompatActivity {
         final Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(time);
         textView.setText(getString(res, new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(calendar.getTime())));
+        textView.setVisibility(View.VISIBLE);
     }
 
     private void showNextAlarm(TextView textView) {
-        final AlarmManager alarmManager = getSystemService(AlarmManager.class);
-        final AlarmManager.AlarmClockInfo nextAlarm = alarmManager.getNextAlarmClock();
-
-        if (nextAlarm == null) {
+        final long triggerTime = getTriggerTime();
+        if (triggerTime <= 0) {
             textView.setText(getString(R.string.no_scheduled_alarm));
         } else {
             final Calendar calendar = Calendar.getInstance();
-            calendar.setTimeInMillis(nextAlarm.getTriggerTime());
+            calendar.setTimeInMillis(triggerTime);
             textView.setText(getString(R.string.next_alarm, new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(calendar.getTime())));
         }
+    }
+
+    private long getTriggerTime() {
+        final AlarmManager alarmManager = getSystemService(AlarmManager.class);
+        final AlarmManager.AlarmClockInfo nextAlarm = alarmManager.getNextAlarmClock();
+        return nextAlarm == null ? -1 : nextAlarm.getTriggerTime();
     }
 }

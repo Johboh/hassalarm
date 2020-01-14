@@ -11,6 +11,8 @@ import android.content.SharedPreferences;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.google.auto.value.AutoValue;
+
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -47,11 +49,14 @@ public class NextAlarmUpdaterJob extends JobService {
             mCall.cancel();
         }
 
+        final long triggerTimestamp;
         try {
-            mCall = createRequestCall(this);
+            final Request request = createRequest(this);
+            mCall = request.call();
+            triggerTimestamp = request.triggerTimestamp();
         } catch (IllegalArgumentException e) {
             Log.e(Constants.LOG_TAG, "Failed to create request: " + e.getMessage());
-            markAsDone(this, false);
+            markAsDone(this, false, 0);
             return false;
         }
 
@@ -59,12 +64,12 @@ public class NextAlarmUpdaterJob extends JobService {
         mCall.enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                boolean wantsReschedule = true;
+                boolean successful = false;
                 try {
                     final ResponseBody body = response.body();
                     if (body != null) {
                         Log.d(Constants.LOG_TAG, "Retofit succeeded: " + body.toString());
-                        wantsReschedule = false;
+                        successful = true;
                     } else if (response.errorBody() != null) {
                         Log.e(Constants.LOG_TAG, "Retofit failed: " + response.errorBody().string());
                     } else {
@@ -73,8 +78,8 @@ public class NextAlarmUpdaterJob extends JobService {
                 } catch (IOException e) {
                     Log.e(Constants.LOG_TAG, "Retofit failed: " + e.getMessage());
                 }
-                jobFinished(jobParameters, wantsReschedule);
-                markAsDone(NextAlarmUpdaterJob.this, !wantsReschedule);
+                jobFinished(jobParameters, !successful);
+                markAsDone(NextAlarmUpdaterJob.this, successful, triggerTimestamp);
             }
 
             @Override
@@ -82,7 +87,7 @@ public class NextAlarmUpdaterJob extends JobService {
                 Log.e(NextAlarmUpdaterJob.class.getName(), "Retofit failed: " + t.getMessage());
                 // Fail, reschedule job.
                 jobFinished(jobParameters, true);
-                markAsDone(NextAlarmUpdaterJob.this, false);
+                markAsDone(NextAlarmUpdaterJob.this, false, 0);
             }
         });
 
@@ -98,26 +103,26 @@ public class NextAlarmUpdaterJob extends JobService {
         return true;
     }
 
-    public Call<ResponseBody> createRequestCall(Context context) throws IllegalArgumentException {
+    public Request createRequest(Context context) throws IllegalArgumentException {
         final SharedPreferences sharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         String host = sharedPreferences.getString(KEY_PREFS_HOST, "");
         final String apiKeyOrToken = sharedPreferences.getString(KEY_PREFS_API_KEY, "");
         final String entityId = Migration.getEntityId(sharedPreferences);
         final boolean isToken = sharedPreferences.getBoolean(KEY_PREFS_IS_TOKEN, false);
         final boolean entityIdIsLegacy = Migration.entityIdIsLegacy(sharedPreferences);
-        return createRequestCall(context, host, apiKeyOrToken, entityId, isToken, entityIdIsLegacy);
+        return createRequest(context, host, apiKeyOrToken, entityId, isToken, entityIdIsLegacy);
     }
 
     /**
      * Create a call that can be executed. Will throw an exception in case of any failure,
      * like missing parameters etc.
      */
-    public static Call<ResponseBody> createRequestCall(Context context,
-                                                       String host,
-                                                       String apiKeyOrToken,
-                                                       String entityId,
-                                                       boolean isToken,
-                                                       boolean entityIdIsLegacy) throws IllegalArgumentException {
+    public static Request createRequest(Context context,
+                                        String host,
+                                        String apiKeyOrToken,
+                                        String entityId,
+                                        boolean isToken,
+                                        boolean entityIdIsLegacy) throws IllegalArgumentException {
         final AlarmManager alarmManager = context.getSystemService(AlarmManager.class);
         final AlarmManager.AlarmClockInfo alarmClockInfo = alarmManager.getNextAlarmClock();
 
@@ -146,13 +151,15 @@ public class NextAlarmUpdaterJob extends JobService {
         // Get next scheduled alarm, if any.
         final State state;
         final Datetime datetime;
+        final long triggerTimestamp;
         if (alarmClockInfo != null) {
-            final long timestamp = alarmClockInfo.getTriggerTime();
+            triggerTimestamp = alarmClockInfo.getTriggerTime();
             final Calendar calendar = Calendar.getInstance();
-            calendar.setTimeInMillis(timestamp);
+            calendar.setTimeInMillis(triggerTimestamp);
             state = new State(DATE_FORMAT_LEGACY.format(calendar.getTime()));
             datetime = new Datetime(entityId, DATE_FORMAT.format(calendar.getTime()));
         } else {
+            triggerTimestamp = 0;
             state = new State("");
             datetime = new Datetime(entityId, "");
         }
@@ -160,19 +167,23 @@ public class NextAlarmUpdaterJob extends JobService {
 
         // Enqueue call and run on background thread.
         // Check if it is using long lived access tokens
+        final Call<ResponseBody> call;
         if (isToken) {
             // Create Authorization Header value
             String bearer = String.format(BEARER_PATTERN, apiKeyOrToken);
             if (entityIdIsLegacy) {
-                return hassApi.updateStateUsingToken(state, entityId, bearer);
+                call = hassApi.updateStateUsingToken(state, entityId, bearer);
+            } else {
+                call = hassApi.setInputDatetimeUsingToken(datetime, bearer);
             }
-            return hassApi.setInputDatetimeUsingToken(datetime, bearer);
         } else {
             if (entityIdIsLegacy) {
-                return hassApi.updateStateUsingApiKey(state, entityId, apiKeyOrToken);
+                call = hassApi.updateStateUsingApiKey(state, entityId, apiKeyOrToken);
+            } else {
+                call = hassApi.setInputDatetimeUsingApiKey(datetime, apiKeyOrToken);
             }
-            return hassApi.setInputDatetimeUsingApiKey(datetime, apiKeyOrToken);
         }
+        return Request.create(call, triggerTimestamp);
     }
 
     /**
@@ -191,7 +202,7 @@ public class NextAlarmUpdaterJob extends JobService {
         jobScheduler.schedule(jobInfo);
     }
 
-    public static void markAsDone(Context context, boolean successful) {
+    public static void markAsDone(Context context, boolean successful, long triggerTimestamp) {
         final SharedPreferences sharedPreferences = context.getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         final long timestamp = System.currentTimeMillis();
         final SharedPreferences.Editor editor = sharedPreferences
@@ -200,7 +211,19 @@ public class NextAlarmUpdaterJob extends JobService {
                 .putLong(Constants.LAST_PUBLISH_ATTEMPT, timestamp);
         if (successful) {
             editor.putLong(Constants.LAST_SUCCESSFUL_PUBLISH, timestamp);
+            editor.putLong(Constants.LAST_PUBLISHED_TRIGGER_TIMESTAMP, triggerTimestamp);
         }
         editor.apply();
+    }
+
+    @AutoValue
+    static abstract class Request {
+        public abstract Call<ResponseBody> call();
+
+        public abstract long triggerTimestamp();
+
+        static Request create(Call<ResponseBody> call, long triggerTimestamp) {
+            return new AutoValue_NextAlarmUpdaterJob_Request(call, triggerTimestamp);
+        }
     }
 }

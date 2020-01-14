@@ -43,7 +43,7 @@ public class EditConnectionActivity extends AppCompatActivity {
     private static final String KEY_LAST_SUCCESSFUL = "last_run_successful";
 
     private ContentEditConnectionBinding mBinding;
-    private Call<ResponseBody> mCall;
+    private NextAlarmUpdaterJob.Request mRequest;
     private Boolean mLastRunWasSuccessful;
     private String mStrippedLog;
 
@@ -73,8 +73,8 @@ public class EditConnectionActivity extends AppCompatActivity {
         mBinding.isEntityLegacy.setChecked(Migration.entityIdIsLegacy(sharedPreferences));
 
         mBinding.save.setOnClickListener(v -> {
-            if (mCall != null) {
-                mCall.cancel();
+            if (mRequest != null) {
+                mRequest.call().cancel();
             }
             sharedPreferences.edit()
                     .putString(KEY_PREFS_HOST, mBinding.hostInput.getText().toString().trim())
@@ -82,10 +82,12 @@ public class EditConnectionActivity extends AppCompatActivity {
                     .putString(KEY_PREFS_ENTITY_ID, mBinding.entityIdInput.getText().toString().trim())
                     .putBoolean(KEY_PREFS_IS_TOKEN, !mBinding.isApiInput.isChecked())
                     .putBoolean(KEY_PREFS_IS_ENTITY_ID_LEGACY, mBinding.isEntityLegacy.isChecked())
+                    .putLong(Constants.LAST_PUBLISHED_TRIGGER_TIMESTAMP, 0)
                     .apply();
             Toast.makeText(this, R.string.toast_saved, Toast.LENGTH_SHORT).show();
             if (mLastRunWasSuccessful != null) {
-                NextAlarmUpdaterJob.markAsDone(this, mLastRunWasSuccessful);
+                // On change, reset trigger time.
+                NextAlarmUpdaterJob.markAsDone(this, mLastRunWasSuccessful, 0);
             }
             finish();
         });
@@ -162,17 +164,18 @@ public class EditConnectionActivity extends AppCompatActivity {
         mBinding.log.append((entityIdIsLegacy ? getString(R.string.log_entity_id_is_legacy_sensor) : getString(R.string.log_entity_id_is_input_datetime)) + "\n");
 
         try {
-            mCall = NextAlarmUpdaterJob.createRequestCall(this,
+            mRequest = NextAlarmUpdaterJob.createRequest(this,
                     host,
                     token,
                     entityId,
                     isToken,
                     entityIdIsLegacy);
 
-            mBinding.log.append(getString(R.string.using_url, mCall.request().method(), mCall.request().url().toString()) + "\n");
-            mBinding.log.append(getString(R.string.headers, mCall.request().headers().toString()) + "\n");
-            mBinding.log.append(getString(R.string.body, requestBodyToString(mCall.request())) + "\n");
-            mCall.enqueue(new Callback<ResponseBody>() {
+            final Call<ResponseBody> call = mRequest.call();
+            mBinding.log.append(getString(R.string.using_url, call.request().method(), call.request().url().toString()) + "\n");
+            mBinding.log.append(getString(R.string.headers, call.request().headers().toString()) + "\n");
+            mBinding.log.append(getString(R.string.body, requestBodyToString(call.request())) + "\n");
+            call.enqueue(new Callback<ResponseBody>() {
                 @Override
                 public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                     boolean wasSuccessful = false;
