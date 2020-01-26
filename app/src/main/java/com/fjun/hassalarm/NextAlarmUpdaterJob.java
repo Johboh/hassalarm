@@ -161,7 +161,7 @@ public class NextAlarmUpdaterJob extends JobService {
         } else {
             triggerTimestamp = 0;
             state = new State("");
-            datetime = new Datetime(entityId, "");
+            datetime = new Datetime(entityId, "1970-01-01 00:00:00");
         }
         Log.d(Constants.LOG_TAG, "Setting time to " + datetime.datetime);
 
