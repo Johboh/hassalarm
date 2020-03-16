@@ -140,8 +140,8 @@ public class EditConnectionActivity extends AppCompatActivity {
                 !sharedPreferences.getString(KEY_PREFS_API_KEY, "").equals(mBinding.apiKeyInput.getText().toString().trim()) ||
                 !Migration.getEntityId(sharedPreferences).equals(mBinding.entityIdInput.getText().toString().trim()) ||
                 Migration.entityIdIsLegacy(sharedPreferences) != mBinding.isEntityLegacy.isChecked() ||
-                sharedPreferences.getBoolean(KEY_PREFS_IS_TOKEN, true) == mBinding.keyIsToken.isChecked() ||
-                sharedPreferences.getBoolean(KEY_PREFS_IS_WEBHOOK, true) == mBinding.keyIsWebhook.isChecked()) {
+                sharedPreferences.getBoolean(KEY_PREFS_IS_TOKEN, true) != mBinding.keyIsToken.isChecked() ||
+                sharedPreferences.getBoolean(KEY_PREFS_IS_WEBHOOK, false) != mBinding.keyIsWebhook.isChecked()) {
             new MaterialAlertDialogBuilder(this)
                     .setTitle(R.string.unsaved_changes_title)
                     .setMessage(R.string.unsaved_changes_message)
