@@ -10,6 +10,7 @@ interface Constants {
     String KEY_PREFS_HOST = "host";
     String KEY_PREFS_ENTITY_ID = "entity_id";
     String KEY_PREFS_IS_TOKEN = "is_token";
+    String KEY_PREFS_IS_WEBHOOK = "is_webhook";
     String KEY_PREFS_IS_ENTITY_ID_LEGACY = "is_entity_id_legacy";
     String DEFAULT_ENTITY_ID = "input_datetime.next_alarm";
     String DEFAULT_LEGACY_ENTITY_ID = "sensor.next_alarm";

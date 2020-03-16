@@ -4,6 +4,7 @@ import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.Header;
+import retrofit2.http.Headers;
 import retrofit2.http.POST;
 import retrofit2.http.Path;
 
@@ -24,4 +25,8 @@ public interface HassApi {
 
     @POST("/api/services/input_datetime/set_datetime")
     Call<ResponseBody> setInputDatetimeUsingToken(@Body Datetime datetime, @Header("Authorization") String token);
+
+    @Headers("Content-type: application/json")
+    @POST("/api/webhook/{webhook_id}")
+    Call<ResponseBody> updateStateUsingWebhook(@Body Datetime datetime, @Path("webhook_id") String webhook_id);
 }

@@ -36,6 +36,7 @@ import static com.fjun.hassalarm.Constants.KEY_PREFS_ENTITY_ID;
 import static com.fjun.hassalarm.Constants.KEY_PREFS_HOST;
 import static com.fjun.hassalarm.Constants.KEY_PREFS_IS_ENTITY_ID_LEGACY;
 import static com.fjun.hassalarm.Constants.KEY_PREFS_IS_TOKEN;
+import static com.fjun.hassalarm.Constants.KEY_PREFS_IS_WEBHOOK;
 import static com.fjun.hassalarm.Constants.PREFS_NAME;
 
 public class EditConnectionActivity extends AppCompatActivity {
@@ -66,7 +67,25 @@ public class EditConnectionActivity extends AppCompatActivity {
         final SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         mBinding.hostInput.setText(sharedPreferences.getString(KEY_PREFS_HOST, ""));
         mBinding.apiKeyInput.setText(sharedPreferences.getString(KEY_PREFS_API_KEY, ""));
-        mBinding.isApiInput.setChecked(!sharedPreferences.getBoolean(KEY_PREFS_IS_TOKEN, true));
+
+        mBinding.keyType.setOnCheckedChangeListener((group, checkedId) -> {
+            if (checkedId == mBinding.keyIsWebhook.getId()) {
+                mBinding.isEntityLegacy.setEnabled(false);
+            } else {
+                mBinding.isEntityLegacy.setEnabled(true);
+            }
+        });
+
+        int activeRadioButton;
+        if (sharedPreferences.getBoolean(KEY_PREFS_IS_TOKEN, true)) {
+            activeRadioButton = mBinding.keyIsToken.getId();
+        } else if (sharedPreferences.getBoolean(KEY_PREFS_IS_WEBHOOK, false)) {
+            activeRadioButton = mBinding.keyIsWebhook.getId();
+        } else {
+            activeRadioButton = mBinding.keyIsLegacy.getId();
+        }
+        mBinding.keyType.check(activeRadioButton);
+
 
         // Migration of old versions to new versions
         mBinding.entityIdInput.setText(Migration.getEntityId(sharedPreferences));
@@ -80,7 +99,8 @@ public class EditConnectionActivity extends AppCompatActivity {
                     .putString(KEY_PREFS_HOST, mBinding.hostInput.getText().toString().trim())
                     .putString(KEY_PREFS_API_KEY, mBinding.apiKeyInput.getText().toString().trim())
                     .putString(KEY_PREFS_ENTITY_ID, mBinding.entityIdInput.getText().toString().trim())
-                    .putBoolean(KEY_PREFS_IS_TOKEN, !mBinding.isApiInput.isChecked())
+                    .putBoolean(KEY_PREFS_IS_TOKEN, mBinding.keyIsToken.isChecked())
+                    .putBoolean(KEY_PREFS_IS_WEBHOOK, mBinding.keyIsWebhook.isChecked())
                     .putBoolean(KEY_PREFS_IS_ENTITY_ID_LEGACY, mBinding.isEntityLegacy.isChecked())
                     .putLong(Constants.LAST_PUBLISHED_TRIGGER_TIMESTAMP, 0)
                     .apply();
@@ -120,7 +140,8 @@ public class EditConnectionActivity extends AppCompatActivity {
                 !sharedPreferences.getString(KEY_PREFS_API_KEY, "").equals(mBinding.apiKeyInput.getText().toString().trim()) ||
                 !Migration.getEntityId(sharedPreferences).equals(mBinding.entityIdInput.getText().toString().trim()) ||
                 Migration.entityIdIsLegacy(sharedPreferences) != mBinding.isEntityLegacy.isChecked() ||
-                sharedPreferences.getBoolean(KEY_PREFS_IS_TOKEN, true) == mBinding.isApiInput.isChecked()) {
+                sharedPreferences.getBoolean(KEY_PREFS_IS_TOKEN, true) != mBinding.keyIsToken.isChecked() ||
+                sharedPreferences.getBoolean(KEY_PREFS_IS_WEBHOOK, false) != mBinding.keyIsWebhook.isChecked()) {
             new MaterialAlertDialogBuilder(this)
                     .setTitle(R.string.unsaved_changes_title)
                     .setMessage(R.string.unsaved_changes_message)
@@ -157,11 +178,20 @@ public class EditConnectionActivity extends AppCompatActivity {
         final String host = mBinding.hostInput.getText().toString().trim();
         final String token = mBinding.apiKeyInput.getText().toString().trim();
         final String entityId = mBinding.entityIdInput.getText().toString().trim();
-        final boolean isToken = !mBinding.isApiInput.isChecked();
+        final boolean isToken = mBinding.keyIsToken.isChecked();
+        final boolean isWebhook = mBinding.keyIsWebhook.isChecked();
         final boolean entityIdIsLegacy = mBinding.isEntityLegacy.isChecked();
 
-        mBinding.log.append((isToken ? getString(R.string.log_using_token) : getString(R.string.log_using_api_key)) + "\n");
-        mBinding.log.append((entityIdIsLegacy ? getString(R.string.log_entity_id_is_legacy_sensor) : getString(R.string.log_entity_id_is_input_datetime)) + "\n");
+        if (isToken) {
+            mBinding.log.append(getString(R.string.log_using_token) + "\n");
+        } else if (isWebhook) {
+            mBinding.log.append(getString(R.string.log_using_webhook) + "\n");
+        } else {
+            mBinding.log.append(getString(R.string.log_using_api_key) + "\n");
+        }
+        if (!isWebhook) {
+            mBinding.log.append((entityIdIsLegacy ? getString(R.string.log_entity_id_is_legacy_sensor) : getString(R.string.log_entity_id_is_input_datetime)) + "\n");
+        }
 
         try {
             mRequest = NextAlarmUpdaterJob.createRequest(this,
@@ -169,6 +199,7 @@ public class EditConnectionActivity extends AppCompatActivity {
                     token,
                     entityId,
                     isToken,
+                    isWebhook,
                     entityIdIsLegacy);
 
             final Call<ResponseBody> call = mRequest.call();
