@@ -47,6 +47,8 @@ Or if you want to trigger an automation five minutes before the alarm will go of
 ## Webhook support
 HassAlarm supports updates through a webhook. This requires some setup on the Home Assistant side, but it greatly reduces the permissions the app has in Home Assistant.
 To use a webhook for HassAlarm updates, you can use the automation below and adapt it as necessary. Note that your webhook ID should be hard to guess.
+
+This automation will update ànd set the `input_datetime` for the entity ID specified in the app. Then you can use the `input_datetime` sensor in your automations as in the example above.
 ```yaml
 automation:
   trigger:
