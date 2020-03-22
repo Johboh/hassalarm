@@ -59,37 +59,34 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/key_type"
-            android:layout_marginBottom="10dp"
+            android:layout_marginBottom="6dp"
             />
 
         <RadioButton
             android:id="@+id/key_is_token"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            style="@style/Widget.MaterialComponents.CompoundButton.RadioButton"
             android:text="@string/key_is_token"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/key_type_text"
-            android:layout_marginBottom="10dp"
             />
 
         <RadioButton
             android:id="@+id/key_is_webhook"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            style="@style/Widget.MaterialComponents.CompoundButton.RadioButton"
             android:text="@string/key_is_webhook"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/key_is_token"
-            android:layout_marginBottom="10dp"
             />
 
         <RadioButton
             android:id="@+id/key_is_legacy"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            style="@style/Widget.MaterialComponents.CompoundButton.RadioButton"
             android:text="@string/key_is_legacy"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/key_is_webhook"
-            android:layout_marginBottom="10dp"
             />
 
     </RadioGroup>
