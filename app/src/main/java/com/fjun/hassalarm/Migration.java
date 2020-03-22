@@ -5,9 +5,11 @@ import android.text.TextUtils;
 
 import static com.fjun.hassalarm.Constants.DEFAULT_ENTITY_ID;
 import static com.fjun.hassalarm.Constants.DEFAULT_LEGACY_ENTITY_ID;
+import static com.fjun.hassalarm.Constants.KEY_PREFS_ACCESS_TYPE;
 import static com.fjun.hassalarm.Constants.KEY_PREFS_ENTITY_ID;
 import static com.fjun.hassalarm.Constants.KEY_PREFS_HOST;
 import static com.fjun.hassalarm.Constants.KEY_PREFS_IS_ENTITY_ID_LEGACY;
+import static com.fjun.hassalarm.Constants.KEY_PREFS_IS_TOKEN;
 
 /**
  * Helper class for migration logic.
@@ -43,5 +45,28 @@ class Migration {
             entityId = TextUtils.isEmpty(entityId) ? DEFAULT_LEGACY_ENTITY_ID : entityId;
         }
         return entityId;
+    }
+
+    /**
+     * Migration logic for getting the access type.
+     */
+    static Constants.AccessType getAccessType(SharedPreferences sharedPreferences) {
+        // If we have the access token prefs, use that one first.
+        if (sharedPreferences.contains(KEY_PREFS_ACCESS_TYPE)) {
+            try {
+                return Constants.AccessType.valueOf(sharedPreferences.getString(KEY_PREFS_ACCESS_TYPE, Constants.AccessType.LONG_LIVED_TOKEN.name()));
+            } catch (IllegalArgumentException e) {
+                return Constants.AccessType.LONG_LIVED_TOKEN;
+            }
+        }
+
+        // If token exists we should respect that setting and the access type
+        // is either the long lived token or the legacy API key.
+        if (sharedPreferences.contains(KEY_PREFS_IS_TOKEN)) {
+            return sharedPreferences.getBoolean(KEY_PREFS_IS_TOKEN, true) ? Constants.AccessType.LONG_LIVED_TOKEN : Constants.AccessType.LEGACY_API_KEY;
+        }
+
+        // Fallback on default installations.
+        return Constants.AccessType.LONG_LIVED_TOKEN;
     }
 }

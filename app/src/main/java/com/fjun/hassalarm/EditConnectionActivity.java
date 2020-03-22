@@ -16,12 +16,11 @@ import com.fjun.hassalarm.databinding.ActivityEditConnectionBinding;
 import com.fjun.hassalarm.databinding.ContentEditConnectionBinding;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
+import static com.fjun.hassalarm.Constants.KEY_PREFS_ACCESS_TYPE;
 import static com.fjun.hassalarm.Constants.KEY_PREFS_API_KEY;
 import static com.fjun.hassalarm.Constants.KEY_PREFS_ENTITY_ID;
 import static com.fjun.hassalarm.Constants.KEY_PREFS_HOST;
 import static com.fjun.hassalarm.Constants.KEY_PREFS_IS_ENTITY_ID_LEGACY;
-import static com.fjun.hassalarm.Constants.KEY_PREFS_IS_TOKEN;
-import static com.fjun.hassalarm.Constants.KEY_PREFS_IS_WEBHOOK;
 import static com.fjun.hassalarm.Constants.PREFS_NAME;
 
 public class EditConnectionActivity extends AppCompatActivity {
@@ -54,13 +53,11 @@ public class EditConnectionActivity extends AppCompatActivity {
           final String host = mBinding.hostInput.getText().toString().trim();
           final String token = mBinding.apiKeyInput.getText().toString().trim();
           final String entityId = mBinding.entityIdInput.getText().toString().trim();
-          final boolean isToken = mBinding.keyIsToken.isChecked();
-          final boolean isWebHook = mBinding.keyIsWebhook.isChecked();
           final boolean entityIdIsLegacy = mBinding.isEntityLegacy.isChecked();
           mLastRunWasSuccessful = null;
           startActivityForResult(
               TestConnectionActivity.createIntent(
-                  this, host, token, entityId, isToken, isWebHook, entityIdIsLegacy),
+                  this, host, token, entityId, getAccessType(), entityIdIsLegacy),
               REQUEST_CODE_TEST_CONNECTION);
         });
 
@@ -87,9 +84,10 @@ public class EditConnectionActivity extends AppCompatActivity {
         });
 
     int activeRadioButton;
-    if (sharedPreferences.getBoolean(KEY_PREFS_IS_TOKEN, true)) {
+    final Constants.AccessType accessType = Migration.getAccessType(sharedPreferences);
+    if (accessType == Constants.AccessType.LONG_LIVED_TOKEN) {
       activeRadioButton = mBinding.keyIsToken.getId();
-    } else if (sharedPreferences.getBoolean(KEY_PREFS_IS_WEBHOOK, false)) {
+    } else if (accessType == Constants.AccessType.WEB_HOOK) {
       activeRadioButton = mBinding.keyIsWebhook.getId();
     } else {
       activeRadioButton = mBinding.keyIsLegacy.getId();
@@ -102,13 +100,21 @@ public class EditConnectionActivity extends AppCompatActivity {
 
     mBinding.save.setOnClickListener(
         v -> {
+          final Constants.AccessType type;
+          if (mBinding.keyIsToken.isChecked()) {
+            type = Constants.AccessType.LONG_LIVED_TOKEN;
+          } else if (mBinding.keyIsWebhook.isChecked()) {
+            type = Constants.AccessType.WEB_HOOK;
+          } else {
+            type = Constants.AccessType.LEGACY_API_KEY;
+          }
+
           sharedPreferences
               .edit()
               .putString(KEY_PREFS_HOST, mBinding.hostInput.getText().toString().trim())
               .putString(KEY_PREFS_API_KEY, mBinding.apiKeyInput.getText().toString().trim())
               .putString(KEY_PREFS_ENTITY_ID, mBinding.entityIdInput.getText().toString().trim())
-              .putBoolean(KEY_PREFS_IS_TOKEN, mBinding.keyIsToken.isChecked())
-              .putBoolean(KEY_PREFS_IS_WEBHOOK, mBinding.keyIsWebhook.isChecked())
+              .putString(KEY_PREFS_ACCESS_TYPE, type.name())
               .putBoolean(KEY_PREFS_IS_ENTITY_ID_LEGACY, mBinding.isEntityLegacy.isChecked())
               .putLong(Constants.LAST_PUBLISHED_TRIGGER_TIMESTAMP, 0)
               .apply();
@@ -133,9 +139,7 @@ public class EditConnectionActivity extends AppCompatActivity {
         || !Migration.getEntityId(sharedPreferences)
             .equals(mBinding.entityIdInput.getText().toString().trim())
         || Migration.entityIdIsLegacy(sharedPreferences) != mBinding.isEntityLegacy.isChecked()
-        || sharedPreferences.getBoolean(KEY_PREFS_IS_TOKEN, true) != mBinding.keyIsToken.isChecked()
-        || sharedPreferences.getBoolean(KEY_PREFS_IS_WEBHOOK, false)
-            != mBinding.keyIsWebhook.isChecked()) {
+        || Migration.getAccessType(sharedPreferences) != getAccessType()) {
       new MaterialAlertDialogBuilder(this)
           .setTitle(R.string.unsaved_changes_title)
           .setMessage(R.string.unsaved_changes_message)
@@ -176,5 +180,15 @@ public class EditConnectionActivity extends AppCompatActivity {
     if (requestCode == REQUEST_CODE_TEST_CONNECTION) {
       mLastRunWasSuccessful = TestConnectionActivity.getLastRunWasSuccessful(data);
     }
+  }
+
+  private Constants.AccessType getAccessType() {
+    if (mBinding.keyIsWebhook.isChecked()) {
+      return Constants.AccessType.WEB_HOOK;
+    }
+    if (mBinding.keyIsLegacy.isChecked()) {
+      return Constants.AccessType.LEGACY_API_KEY;
+    }
+    return Constants.AccessType.LONG_LIVED_TOKEN;
   }
 }

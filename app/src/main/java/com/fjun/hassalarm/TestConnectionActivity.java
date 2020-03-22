@@ -31,8 +31,7 @@ public class TestConnectionActivity extends AppCompatActivity {
   private static final String EXTRA_HOST = "host";
   private static final String EXTRA_TOKEN = "token";
   private static final String EXTRA_ENTITY_ID = "entity_id";
-  private static final String EXTRA_IS_TOKEN = "is_token";
-  private static final String EXTRA_IS_WEB_HOOK = "is_web_hook";
+  private static final String EXTRA_ACCESS_TYPE = "access_type";
   private static final String EXTRA_ENTITY_ID_IS_LEGACY = "entity_id_is_legacy";
 
   private String mStrippedLog;
@@ -43,9 +42,8 @@ public class TestConnectionActivity extends AppCompatActivity {
   private String mHost;
   private String mToken;
   private String mEntityId;
-  private Boolean mIsToken;
-  private Boolean mIsWebHook;
   private Boolean mEntityIdIsLegacy;
+  private Constants.AccessType mAccessType;
 
   private static String requestBodyToString(final Request request) {
     try {
@@ -63,15 +61,13 @@ public class TestConnectionActivity extends AppCompatActivity {
       String host,
       String token,
       String entityId,
-      boolean isToken,
-      boolean isWebHook,
+      Constants.AccessType accessType,
       boolean entityIdIsLegacy) {
     final Intent intent = new Intent(context, TestConnectionActivity.class);
     intent.putExtra(EXTRA_HOST, host);
     intent.putExtra(EXTRA_TOKEN, token);
     intent.putExtra(EXTRA_ENTITY_ID, entityId);
-    intent.putExtra(EXTRA_IS_TOKEN, isToken);
-    intent.putExtra(EXTRA_IS_WEB_HOOK, isWebHook);
+    intent.putExtra(EXTRA_ACCESS_TYPE, accessType);
     intent.putExtra(EXTRA_ENTITY_ID_IS_LEGACY, entityIdIsLegacy);
     return intent;
   }
@@ -102,15 +98,13 @@ public class TestConnectionActivity extends AppCompatActivity {
       mHost = savedInstanceState.getString(EXTRA_HOST);
       mToken = savedInstanceState.getString(EXTRA_TOKEN);
       mEntityId = savedInstanceState.getString(EXTRA_ENTITY_ID);
-      mIsToken = savedInstanceState.getBoolean(EXTRA_IS_TOKEN);
-      mIsWebHook = savedInstanceState.getBoolean(EXTRA_IS_WEB_HOOK);
+      mAccessType = (Constants.AccessType) savedInstanceState.getSerializable(EXTRA_ACCESS_TYPE);
       mEntityIdIsLegacy = savedInstanceState.getBoolean(EXTRA_ENTITY_ID_IS_LEGACY);
     } else {
       mHost = getIntent().getStringExtra(EXTRA_HOST);
       mToken = getIntent().getStringExtra(EXTRA_TOKEN);
       mEntityId = getIntent().getStringExtra(EXTRA_ENTITY_ID);
-      mIsToken = getIntent().getBooleanExtra(EXTRA_IS_TOKEN, false);
-      mIsWebHook = getIntent().getBooleanExtra(EXTRA_IS_WEB_HOOK, false);
+      mAccessType = (Constants.AccessType) getIntent().getSerializableExtra(EXTRA_ACCESS_TYPE);
       mEntityIdIsLegacy = getIntent().getBooleanExtra(EXTRA_ENTITY_ID_IS_LEGACY, false);
     }
 
@@ -163,8 +157,7 @@ public class TestConnectionActivity extends AppCompatActivity {
     outState.putString(EXTRA_HOST, mHost);
     outState.putString(EXTRA_TOKEN, mToken);
     outState.putString(EXTRA_ENTITY_ID, mEntityId);
-    outState.putBoolean(EXTRA_IS_TOKEN, mIsToken);
-    outState.putBoolean(EXTRA_IS_WEB_HOOK, mIsWebHook);
+    outState.putSerializable(EXTRA_ACCESS_TYPE, mAccessType);
     outState.putBoolean(EXTRA_ENTITY_ID_IS_LEGACY, mEntityIdIsLegacy);
   }
 
@@ -175,14 +168,14 @@ public class TestConnectionActivity extends AppCompatActivity {
     mBinding.log.setText("");
     mStrippedLog = "";
 
-    if (mIsToken) {
+    if (mAccessType == Constants.AccessType.LONG_LIVED_TOKEN) {
       mBinding.log.append(getString(R.string.log_using_token) + "\n");
-    } else if (mIsWebHook) {
+    } else if (mAccessType == Constants.AccessType.WEB_HOOK) {
       mBinding.log.append(getString(R.string.log_using_webhook) + "\n");
     } else {
       mBinding.log.append(getString(R.string.log_using_api_key) + "\n");
     }
-    if (!mIsWebHook) {
+    if (mAccessType != Constants.AccessType.WEB_HOOK) {
       mBinding.log.append(
           (mEntityIdIsLegacy
                   ? getString(R.string.log_entity_id_is_legacy_sensor)
@@ -193,7 +186,7 @@ public class TestConnectionActivity extends AppCompatActivity {
     try {
       mRequest =
           NextAlarmUpdaterJob.createRequest(
-              this, mHost, mToken, mEntityId, mIsToken, mIsWebHook, mEntityIdIsLegacy);
+              this, mHost, mToken, mEntityId, mAccessType, mEntityIdIsLegacy);
 
       final Call<ResponseBody> call = mRequest.call();
       mBinding.log.append(

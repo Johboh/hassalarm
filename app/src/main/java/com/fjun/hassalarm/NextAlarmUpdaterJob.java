@@ -28,8 +28,6 @@ import retrofit2.converter.gson.GsonConverterFactory;
 import static com.fjun.hassalarm.Constants.DEFAULT_PORT;
 import static com.fjun.hassalarm.Constants.KEY_PREFS_API_KEY;
 import static com.fjun.hassalarm.Constants.KEY_PREFS_HOST;
-import static com.fjun.hassalarm.Constants.KEY_PREFS_IS_TOKEN;
-import static com.fjun.hassalarm.Constants.KEY_PREFS_IS_WEBHOOK;
 import static com.fjun.hassalarm.Constants.PREFS_NAME;
 
 public class NextAlarmUpdaterJob extends JobService {
@@ -109,10 +107,9 @@ public class NextAlarmUpdaterJob extends JobService {
         String host = sharedPreferences.getString(KEY_PREFS_HOST, "");
         final String apiKeyOrToken = sharedPreferences.getString(KEY_PREFS_API_KEY, "");
         final String entityId = Migration.getEntityId(sharedPreferences);
-        final boolean isToken = sharedPreferences.getBoolean(KEY_PREFS_IS_TOKEN, false);
-        final boolean isWebhook = sharedPreferences.getBoolean(KEY_PREFS_IS_WEBHOOK, false);
+        final Constants.AccessType accessType = Migration.getAccessType(sharedPreferences);
         final boolean entityIdIsLegacy = Migration.entityIdIsLegacy(sharedPreferences);
-        return createRequest(context, host, apiKeyOrToken, entityId, isToken, isWebhook, entityIdIsLegacy);
+        return createRequest(context, host, apiKeyOrToken, entityId, accessType, entityIdIsLegacy);
     }
 
     /**
@@ -123,8 +120,7 @@ public class NextAlarmUpdaterJob extends JobService {
                                         String host,
                                         String apiKeyOrToken,
                                         String entityId,
-                                        boolean isToken,
-                                        boolean isWebhook,
+                                        Constants.AccessType accessType,
                                         boolean entityIdIsLegacy) throws IllegalArgumentException {
         final AlarmManager alarmManager = context.getSystemService(AlarmManager.class);
         final AlarmManager.AlarmClockInfo alarmClockInfo = alarmManager.getNextAlarmClock();
@@ -171,7 +167,7 @@ public class NextAlarmUpdaterJob extends JobService {
         // Enqueue call and run on background thread.
         // Check if it is using long lived access tokens
         final Call<ResponseBody> call;
-        if (isToken) {
+        if (accessType == Constants.AccessType.LONG_LIVED_TOKEN) {
             // Create Authorization Header value
             String bearer = String.format(BEARER_PATTERN, apiKeyOrToken);
             if (entityIdIsLegacy) {
@@ -180,7 +176,7 @@ public class NextAlarmUpdaterJob extends JobService {
                 call = hassApi.setInputDatetimeUsingToken(datetime, bearer);
             }
         } else {
-            if (isWebhook) {
+            if (accessType == Constants.AccessType.WEB_HOOK) {
                 call = hassApi.updateStateUsingWebhook(datetime, apiKeyOrToken);
             } else if (entityIdIsLegacy) {
                 call = hassApi.updateStateUsingApiKey(state, entityId, apiKeyOrToken);
