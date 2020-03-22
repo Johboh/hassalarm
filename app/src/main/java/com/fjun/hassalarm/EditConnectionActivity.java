@@ -76,6 +76,14 @@ public class EditConnectionActivity extends AppCompatActivity {
           } else {
             mBinding.isEntityLegacy.setEnabled(true);
           }
+
+          if (checkedId == mBinding.keyIsToken.getId()) {
+            mBinding.apiKey.setHint(mBinding.keyIsToken.getText());
+          } else if (checkedId == mBinding.keyIsWebhook.getId()) {
+            mBinding.apiKey.setHint(mBinding.keyIsWebhook.getText());
+          } else if (checkedId == mBinding.keyIsLegacy.getId()) {
+            mBinding.apiKey.setHint(mBinding.keyIsLegacy.getText());
+          }
         });
 
     int activeRadioButton;

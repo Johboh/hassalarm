@@ -2,7 +2,6 @@
     <string name="app_name">Hassalarm</string>
     <string name="no_scheduled_alarm">No next alarm scheduled.</string>
     <string name="hass_io_host_name_ip">Home Assistant host name/IP</string>
-    <string name="hass_io_api_key">Home Assistant access key</string>
     <string name="next_alarm">Next scheduled alarm %s</string>
     <string name="toast_saved">Connection details saved.</string>
     <string name="hass_io_entity_id">Entity ID</string>
