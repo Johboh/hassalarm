@@ -69,5 +69,8 @@ automation:
 
 Once your device have a network connection, it should eventually do a call to the Hass.io API and your input_datetime should be set.
 
+## Troubleshooting
+1. Make sure the app is allowed to run in the background (e.g. start a sync job), read more here: https://support.google.com/pixelphone/thread/6068458?hl=en (thanks [@Hooolm](https://github.com/Hooolm))
+
 ## Build status
 [![Build Status](https://travis-ci.com/Johboh/hassalarm.svg?branch=master)](https://travis-ci.com/Johboh/hassalarm)
