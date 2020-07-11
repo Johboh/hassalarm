@@ -29,5 +29,6 @@ interface Constants {
     String LAST_SUCCESSFUL_PUBLISH = "last_successful_publish";
     String LAST_PUBLISH_WAS_SUCCESSFUL = "last_publish_was_successful";
     String LAST_PUBLISHED_TRIGGER_TIMESTAMP = "last_published_trigger_timestamp";
+    String KEY_IGNORED_PACKAGES = "ignored_packages";
     int DEFAULT_PORT = 8123;
 }

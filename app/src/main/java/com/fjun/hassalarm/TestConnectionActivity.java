@@ -17,6 +17,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.fjun.hassalarm.databinding.ActivityTestConnectionBinding;
 
 import java.io.IOException;
+import java.util.HashSet;
 
 import okhttp3.Request;
 import okhttp3.ResponseBody;
@@ -186,7 +187,7 @@ public class TestConnectionActivity extends AppCompatActivity {
     try {
       mRequest =
           NextAlarmUpdaterJob.createRequest(
-              this, mHost, mToken, mEntityId, mAccessType, mEntityIdIsLegacy);
+              this, mHost, mToken, mEntityId, mAccessType, mEntityIdIsLegacy, new HashSet<>());
 
       final Call<ResponseBody> call = mRequest.call();
       mBinding.log.append(

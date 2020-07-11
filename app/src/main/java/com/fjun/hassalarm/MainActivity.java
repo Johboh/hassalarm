@@ -19,9 +19,12 @@ import com.fjun.hassalarm.databinding.ContentMainBinding;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.HashSet;
 import java.util.Locale;
+import java.util.Set;
 import java.util.function.IntSupplier;
 
+import static com.fjun.hassalarm.Constants.KEY_IGNORED_PACKAGES;
 import static com.fjun.hassalarm.Constants.PREFS_NAME;
 
 public class MainActivity extends AppCompatActivity {
@@ -61,6 +64,10 @@ public class MainActivity extends AppCompatActivity {
             startActivity(AboutActivity.createIntent(this));
             return true;
         }
+        if (item.getItemId() == R.id.action_banlist) {
+            startActivity(BanActivity.createIntent(this));
+            return true;
+        }
         return super.onOptionsItemSelected(item);
     }
 
@@ -97,7 +104,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        showNextAlarm(mBinding.nextAlarm);
+        showNextAlarm(mBinding.nextAlarm, sharedPreferences.getStringSet(KEY_IGNORED_PACKAGES, new HashSet<>()));
     }
 
     private void setLastPublishAt(@StringRes int res, TextView textView, Long time) {
@@ -107,9 +114,14 @@ public class MainActivity extends AppCompatActivity {
         textView.setVisibility(View.VISIBLE);
     }
 
-    private void showNextAlarm(TextView textView) {
+    private void showNextAlarm(TextView textView, Set<String> ignoredPackages) {
         final long triggerTime = getTriggerTime();
-        if (triggerTime <= 0) {
+
+        // Ignored?
+        final AlarmManager.AlarmClockInfo alarmClockInfo = alarmClockInfo();
+        if (alarmClockInfo != null && ignoredPackages.contains(alarmClockInfo.getShowIntent().getCreatorPackage())) {
+            textView.setText(R.string.main_next_is_ignored_app);
+        } else if (triggerTime <= 0) {
             textView.setText(getString(R.string.no_scheduled_alarm));
         } else {
             final Calendar calendar = Calendar.getInstance();
@@ -118,9 +130,13 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private long getTriggerTime() {
+    private AlarmManager.AlarmClockInfo alarmClockInfo() {
         final AlarmManager alarmManager = getSystemService(AlarmManager.class);
-        final AlarmManager.AlarmClockInfo nextAlarm = alarmManager.getNextAlarmClock();
+        return alarmManager.getNextAlarmClock();
+    }
+
+    private long getTriggerTime() {
+        final AlarmManager.AlarmClockInfo nextAlarm = alarmClockInfo();
         return nextAlarm == null ? -1 : nextAlarm.getTriggerTime();
     }
 }

@@ -16,7 +16,9 @@ import com.google.auto.value.AutoValue;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.HashSet;
 import java.util.Locale;
+import java.util.Set;
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -26,6 +28,7 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 import static com.fjun.hassalarm.Constants.DEFAULT_PORT;
+import static com.fjun.hassalarm.Constants.KEY_IGNORED_PACKAGES;
 import static com.fjun.hassalarm.Constants.KEY_PREFS_API_KEY;
 import static com.fjun.hassalarm.Constants.KEY_PREFS_HOST;
 import static com.fjun.hassalarm.Constants.PREFS_NAME;
@@ -109,7 +112,8 @@ public class NextAlarmUpdaterJob extends JobService {
         final String entityId = Migration.getEntityId(sharedPreferences);
         final Constants.AccessType accessType = Migration.getAccessType(sharedPreferences);
         final boolean entityIdIsLegacy = Migration.entityIdIsLegacy(sharedPreferences);
-        return createRequest(context, host, apiKeyOrToken, entityId, accessType, entityIdIsLegacy);
+        final Set<String> ignoredPackages = sharedPreferences.getStringSet(KEY_IGNORED_PACKAGES, new HashSet<>());
+        return createRequest(context, host, apiKeyOrToken, entityId, accessType, entityIdIsLegacy, ignoredPackages);
     }
 
     /**
@@ -121,7 +125,8 @@ public class NextAlarmUpdaterJob extends JobService {
                                         String apiKeyOrToken,
                                         String entityId,
                                         Constants.AccessType accessType,
-                                        boolean entityIdIsLegacy) throws IllegalArgumentException {
+                                        boolean entityIdIsLegacy,
+                                        Set<String> ignoredPackages) throws IllegalArgumentException {
         final AlarmManager alarmManager = context.getSystemService(AlarmManager.class);
         final AlarmManager.AlarmClockInfo alarmClockInfo = alarmManager.getNextAlarmClock();
 
@@ -152,11 +157,21 @@ public class NextAlarmUpdaterJob extends JobService {
         final Datetime datetime;
         final long triggerTimestamp;
         if (alarmClockInfo != null) {
-            triggerTimestamp = alarmClockInfo.getTriggerTime();
-            final Calendar calendar = Calendar.getInstance();
-            calendar.setTimeInMillis(triggerTimestamp);
-            state = new State(DATE_FORMAT_LEGACY.format(calendar.getTime()));
-            datetime = new Datetime(entityId, DATE_FORMAT.format(calendar.getTime()));
+            // Ignored package?
+            String packageName = alarmClockInfo.getShowIntent().getCreatorPackage();
+            if (ignoredPackages.contains(packageName)) {
+                // Ignore!
+                Log.d(Constants.LOG_TAG, "Package " + packageName + " is in ignored list. Ignoring alarm for this package.");
+                triggerTimestamp = 0;
+                state = new State("");
+                datetime = new Datetime(entityId, "1970-01-01 00:00:00");
+            } else {
+                triggerTimestamp = alarmClockInfo.getTriggerTime();
+                final Calendar calendar = Calendar.getInstance();
+                calendar.setTimeInMillis(triggerTimestamp);
+                state = new State(DATE_FORMAT_LEGACY.format(calendar.getTime()));
+                datetime = new Datetime(entityId, DATE_FORMAT.format(calendar.getTime()));
+            }
         } else {
             triggerTimestamp = 0;
             state = new State("");

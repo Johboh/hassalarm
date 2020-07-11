@@ -33,6 +33,7 @@
     <string name="last_failed_publish_at">Last failed publish at %s</string>
     <string name="last_successful_publish_at">Last successful publish at %s</string>
     <string name="test_connection">Test Connection</string>
+    <string name="action_ban">Ignore apps</string>
     <string name="action_about">About</string>
     <string name="is_input_legacy">Entity ID is legacy sensor instead of input_datetime (see About)</string>
     <string name="unsaved_changes_title">Discard changes?</string>
@@ -46,4 +47,11 @@
     <string name="log_using_api_key">Using legacy API key</string>
     <string name="log_entity_id_is_legacy_sensor">Entity ID is of type legacy sensor</string>
     <string name="log_entity_id_is_input_datetime">Entity ID is of type input_datetime</string>
+    <string name="ban_intro">Some applications/phones wrongfully report calendar events or reminders as a next scheduled alarm. The Alarm Manager in Android OS is intended to be used by alarm clocks. This app uses the AlarmManager.getNextAlarmClock() to determine the next scheduled time, but if this is wrongfully set by calendar apps, you can ignore alarms set by those apps. But as there can be only one next alarm set, this app will report no alarm set until the next alarm is an alarm from an app that isn not banned.</string>
+    <string name="ban_howto">To ignore an app, open this view when the next alarm is wrong and add the app to the list of apps to ignore.</string>
+    <string name="ban_ignored">Ignored Apps</string>
+    <string name="ban_button_add_to_ignore_list">Add to ignore list</string>
+    <string name="ban_no_alarm_set"><![CDATA[<none>]]></string>
+    <string name="ban_row_remove">Remove</string>
+    <string name="main_next_is_ignored_app">Next alarm is from an ignored app.</string>
 </resources>
