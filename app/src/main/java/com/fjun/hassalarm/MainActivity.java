@@ -6,8 +6,6 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -22,7 +20,6 @@ import java.util.Calendar;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
-import java.util.function.IntSupplier;
 
 import static com.fjun.hassalarm.Constants.KEY_IGNORED_PACKAGES;
 import static com.fjun.hassalarm.Constants.PREFS_NAME;

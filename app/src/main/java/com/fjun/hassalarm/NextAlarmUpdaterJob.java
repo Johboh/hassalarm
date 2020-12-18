@@ -36,7 +36,6 @@ import static com.fjun.hassalarm.Constants.PREFS_NAME;
 public class NextAlarmUpdaterJob extends JobService {
 
     private static final String BEARER_PATTERN = "Bearer %s";
-    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH);
     private static final SimpleDateFormat DATE_FORMAT_LEGACY = new SimpleDateFormat("yyyy-MM-dd HH:mm:00", Locale.ENGLISH);
     private static final int MAX_EXECUTION_DELAY_MS = 3600 * 1000; // 1h
     static final int JOB_ID = 0;
@@ -164,20 +163,20 @@ public class NextAlarmUpdaterJob extends JobService {
                 Log.d(Constants.LOG_TAG, "Package " + packageName + " is in ignored list. Ignoring alarm for this package.");
                 triggerTimestamp = 0;
                 state = new State("");
-                datetime = new Datetime(entityId, "1970-01-01 00:00:00");
+                datetime = new Datetime(entityId, 0);
             } else {
                 triggerTimestamp = alarmClockInfo.getTriggerTime();
                 final Calendar calendar = Calendar.getInstance();
                 calendar.setTimeInMillis(triggerTimestamp);
                 state = new State(DATE_FORMAT_LEGACY.format(calendar.getTime()));
-                datetime = new Datetime(entityId, DATE_FORMAT.format(calendar.getTime()));
+                datetime = new Datetime(entityId, triggerTimestamp / 1000);
             }
         } else {
             triggerTimestamp = 0;
             state = new State("");
-            datetime = new Datetime(entityId, "1970-01-01 00:00:00");
+            datetime = new Datetime(entityId, 0);
         }
-        Log.d(Constants.LOG_TAG, "Setting time to " + datetime.datetime);
+        Log.d(Constants.LOG_TAG, "Setting time to " + datetime.timestamp);
 
         // Enqueue call and run on background thread.
         // Check if it is using long lived access tokens

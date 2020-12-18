@@ -4,10 +4,10 @@ package com.fjun.hassalarm;
  */
 class Datetime {
     final String entity_id;
-    final String datetime; // Hass format: %Y-%m-%d %H:%M:%S
+    final long timestamp; // UTC unix timestamp. (in seconds)
 
-    Datetime(String entityId, String datetime) {
+    Datetime(String entityId, long timestamp) {
         this.entity_id = entityId;
-        this.datetime = datetime;
+        this.timestamp = timestamp;
     }
 }
