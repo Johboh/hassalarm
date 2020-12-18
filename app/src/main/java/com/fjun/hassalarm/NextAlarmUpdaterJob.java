@@ -146,6 +146,7 @@ public class NextAlarmUpdaterJob extends JobService {
         // Support empty API key, if there is no one required.
         final Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(host)
+                .client(UnsafeOkHttpClient.getUnsafeOkHttpClient())
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
 
