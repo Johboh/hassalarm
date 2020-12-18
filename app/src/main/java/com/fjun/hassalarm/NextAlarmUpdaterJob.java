@@ -164,7 +164,7 @@ public class NextAlarmUpdaterJob extends JobService {
                 Log.d(Constants.LOG_TAG, "Package " + packageName + " is in ignored list. Ignoring alarm for this package.");
                 triggerTimestamp = 0;
                 state = new State("");
-                datetime = new Datetime(entityId, 0);
+                datetime = new Datetime(entityId, 1);
             } else {
                 triggerTimestamp = alarmClockInfo.getTriggerTime();
                 final Calendar calendar = Calendar.getInstance();
@@ -175,7 +175,7 @@ public class NextAlarmUpdaterJob extends JobService {
         } else {
             triggerTimestamp = 0;
             state = new State("");
-            datetime = new Datetime(entityId, 0);
+            datetime = new Datetime(entityId, 1);
         }
         Log.d(Constants.LOG_TAG, "Setting time to " + datetime.timestamp);
 
