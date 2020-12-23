@@ -5,7 +5,7 @@ Expect that alarm clocks schedule alarms properly which will trigger the system 
 Once that happen, a call to your Hass.io instance will happen within an hour, given that there is an Internet connection. On failure, the Android OS will retry later.
 
 ## Home Assistant setup
-1. Add a `input_datetime` with both date and time in your `configuration.xml`
+1. Add a `input_datetime` with both date and time in your `configuration.yaml`
   ```
   input_datetime:
     next_alarm:
@@ -13,7 +13,7 @@ Once that happen, a call to your Hass.io instance will happen within an hour, gi
       has_date: true
       has_time: true
   ```
-1. Add a time sensor in your `configuration.xml`:
+1. Add a time sensor in your `configuration.yaml`:
   ```
   sensor:
   - platform: time_date
