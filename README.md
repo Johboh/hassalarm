@@ -5,6 +5,7 @@ Expect that alarm clocks schedule alarms properly which will trigger the system 
 Once that happen, a call to your Hass.io instance will happen within an hour, given that there is an Internet connection. On failure, the Android OS will retry later.
 
 ## Home Assistant setup
+1. Require Home Assistant 2020.12.1 or later.
 1. Add a `input_datetime` with both date and time in your `configuration.yaml`
   ```
   input_datetime:
@@ -71,6 +72,8 @@ Once your device have a network connection, it should eventually do a call to th
 
 ## Troubleshooting
 1. Make sure the app is allowed to run in the background (e.g. start a sync job), read more here: https://support.google.com/pixelphone/thread/6068458?hl=en (thanks [@Hooolm](https://github.com/Hooolm))
+2. Make sure to use a fairly recent version of Home Assistant, 2020.12.1 or later. 2020.12.0 have bugs with input_datetime
+3. If the time reported in Home Assistant is off by hours or minutes, first try using The stock [Google Alarm Clock](https://play.google.com/store/apps/details?id=com.google.android.deskclock). There are known bugs with the Samsung [[1]](https://eu.community.samsung.com/t5/galaxy-s9-s9/pie-clock-app-bug/td-p/927333) and Xiaomi [[2]](https://community.openhab.org/t/xiaomi-miui-alarm-clock-sending-wrong-epoch-value/90734)[[3]](https://c.mi.com/thread-2585135-1-0.html) alarm clock, and probably others. If there are still issues when using the [Google Alarm Clock](https://play.google.com/store/apps/details?id=com.google.android.deskclock), please open a [issue here](https://github.com/Johboh/hassalarm/issues) on GitHub.
 
 ## Build status
 [![Build Status](https://travis-ci.com/Johboh/hassalarm.svg?branch=master)](https://travis-ci.com/Johboh/hassalarm)
