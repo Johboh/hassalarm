@@ -59,7 +59,7 @@ automation:
     service: input_datetime.set_datetime
     data_template:
       entity_id: "{{ trigger.json.entity_id }}"
-      datetime: "{{ trigger.json.datetime }}"
+      timestamp: "{{ trigger.json.timestamp }}"
 ```
 
 ## App usage
