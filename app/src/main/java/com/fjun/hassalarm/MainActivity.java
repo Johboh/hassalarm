@@ -1,6 +1,7 @@
 package com.fjun.hassalarm;
 
 import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.Menu;
@@ -116,7 +117,9 @@ public class MainActivity extends AppCompatActivity {
 
         // Ignored?
         final AlarmManager.AlarmClockInfo alarmClockInfo = alarmClockInfo();
-        if (alarmClockInfo != null && ignoredPackages.contains(alarmClockInfo.getShowIntent().getCreatorPackage())) {
+        final PendingIntent pendingIntent = alarmClockInfo != null ? alarmClockInfo.getShowIntent() : null;
+        final String packageName = pendingIntent != null ? pendingIntent.getCreatorPackage() : "<no-package>";
+        if (packageName != null && ignoredPackages.contains(packageName)) {
             textView.setText(R.string.main_next_is_ignored_app);
         } else if (triggerTime <= 0) {
             textView.setText(getString(R.string.no_scheduled_alarm));

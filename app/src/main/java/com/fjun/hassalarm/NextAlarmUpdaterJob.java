@@ -1,6 +1,7 @@
 package com.fjun.hassalarm;
 
 import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.app.job.JobInfo;
 import android.app.job.JobParameters;
 import android.app.job.JobScheduler;
@@ -158,8 +159,9 @@ public class NextAlarmUpdaterJob extends JobService {
         final long triggerTimestamp;
         if (alarmClockInfo != null) {
             // Ignored package?
-            String packageName = alarmClockInfo.getShowIntent().getCreatorPackage();
-            if (ignoredPackages.contains(packageName)) {
+            final PendingIntent showIntent = alarmClockInfo.getShowIntent();
+            String packageName = showIntent != null ? showIntent.getCreatorPackage() : "<no-pending-intent>";
+            if (packageName != null && ignoredPackages.contains(packageName)) {
                 // Ignore!
                 Log.d(Constants.LOG_TAG, "Package " + packageName + " is in ignored list. Ignoring alarm for this package.");
                 triggerTimestamp = 0;

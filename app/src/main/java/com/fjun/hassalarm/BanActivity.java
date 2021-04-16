@@ -31,11 +31,12 @@ public class BanActivity extends AppCompatActivity {
         final AlarmManager alarmManager = getSystemService(AlarmManager.class);
         final AlarmManager.AlarmClockInfo alarmClockInfo = alarmManager.getNextAlarmClock();
 
-        final PendingIntent pendingIntent = alarmClockInfo.getShowIntent();
-        final boolean alarmSet = pendingIntent != null;
-        mBinding.add.setEnabled(alarmSet);
+        final String missingPackageName = getString(R.string.ban_no_alarm_set);
+        final PendingIntent pendingIntent = alarmClockInfo != null ? alarmClockInfo.getShowIntent() : null;
+        final String pendingPackageName = pendingIntent != null ? pendingIntent.getCreatorPackage() : missingPackageName;
+        mBinding.add.setEnabled(pendingIntent != null);
 
-        mBinding.nextPackage.setText(alarmSet ? pendingIntent.getCreatorPackage() : getString(R.string.ban_no_alarm_set));
+        mBinding.nextPackage.setText(pendingPackageName != null ? pendingPackageName : missingPackageName);
 
         final SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
 
