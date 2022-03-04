@@ -1,5 +1,7 @@
 package com.fjun.hassalarm;
 
+import static android.app.job.JobInfo.BACKOFF_POLICY_LINEAR;
+
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.app.job.JobInfo;
@@ -43,6 +45,7 @@ public class NextAlarmUpdaterJob extends JobService {
     private static final String BEARER_PATTERN = "Bearer %s";
     private static final SimpleDateFormat DATE_FORMAT_LEGACY = new SimpleDateFormat("yyyy-MM-dd HH:mm:00", Locale.ENGLISH);
     private static final int MAX_EXECUTION_DELAY_MS = 3600 * 1000; // 1h
+    private static final int BACKOFF_MS = 60 * 1000; // 1m
     static final int JOB_ID = 0;
 
     private Call<ResponseBody> mCall;
@@ -62,6 +65,7 @@ public class NextAlarmUpdaterJob extends JobService {
             mCall = request.call();
         } catch (IllegalArgumentException e) {
             Log.e(Constants.LOG_TAG, "Failed to create request: " + e.getMessage());
+            jobFinished(jobParameters, true);
             markAsDone(this, false, 0);
             insertPublish(new Publish(System.currentTimeMillis(), false, 0L, e.getMessage()));
             return false;
@@ -226,7 +230,8 @@ public class NextAlarmUpdaterJob extends JobService {
                 .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
                 .setRequiresCharging(false)
                 .setRequiresDeviceIdle(false)
-                .setOverrideDeadline(MAX_EXECUTION_DELAY_MS)
+                .setBackoffCriteria(BACKOFF_MS, BACKOFF_POLICY_LINEAR)
+                .setOverrideDeadline(deadline(context))
                 .build();
         JobScheduler jobScheduler = (JobScheduler) context.getSystemService(Context.JOB_SCHEDULER_SERVICE);
         jobScheduler.schedule(jobInfo);
@@ -252,6 +257,32 @@ public class NextAlarmUpdaterJob extends JobService {
 
     private void insertPublish(Publish publish) {
         AsyncTask.execute(() -> database().insertAll(publish));
+    }
+
+    private static AlarmManager.AlarmClockInfo alarmClockInfo(Context context) {
+        final AlarmManager alarmManager = context.getSystemService(AlarmManager.class);
+        return alarmManager.getNextAlarmClock();
+    }
+
+    private static long getTriggerTime(Context context) {
+        final AlarmManager.AlarmClockInfo nextAlarm = alarmClockInfo(context);
+        return nextAlarm == null ? 0 : nextAlarm.getTriggerTime();
+    }
+
+    private static int deadline(Context context) {
+        final SharedPreferences sharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        final AlarmManager.AlarmClockInfo alarmClockInfo = alarmClockInfo(context);
+        final PendingIntent pendingIntent = alarmClockInfo != null ? alarmClockInfo.getShowIntent() : null;
+        final String packageName = pendingIntent != null ? pendingIntent.getCreatorPackage() : "<no-package>";
+        final Set<String> ignoredPackages = sharedPreferences.getStringSet(KEY_IGNORED_PACKAGES, new HashSet<>());
+        if (packageName != null && ignoredPackages.contains(packageName)) {
+            return MAX_EXECUTION_DELAY_MS;
+        } else {
+            final long triggerTime = getTriggerTime(context);
+            final long now = System.currentTimeMillis();
+            final long halfDiff = Math.max(0, triggerTime - now) / 2;
+            return (int)Math.min(MAX_EXECUTION_DELAY_MS, halfDiff);
+        }
     }
 
     @AutoValue
