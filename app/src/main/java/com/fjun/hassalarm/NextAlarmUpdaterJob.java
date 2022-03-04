@@ -9,9 +9,13 @@ import android.app.job.JobService;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.fjun.hassalarm.history.AppDatabase;
+import com.fjun.hassalarm.history.Publish;
+import com.fjun.hassalarm.history.PublishDao;
 import com.google.auto.value.AutoValue;
 
 import java.io.IOException;
@@ -54,11 +58,12 @@ public class NextAlarmUpdaterJob extends JobService {
         final long triggerTimestamp;
         try {
             final Request request = createRequest(this);
-            mCall = request.call();
             triggerTimestamp = request.triggerTimestamp();
+            mCall = request.call();
         } catch (IllegalArgumentException e) {
             Log.e(Constants.LOG_TAG, "Failed to create request: " + e.getMessage());
             markAsDone(this, false, 0);
+            insertPublish(new Publish(System.currentTimeMillis(), false, 0L, e.getMessage()));
             return false;
         }
 
@@ -67,29 +72,36 @@ public class NextAlarmUpdaterJob extends JobService {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 boolean successful = false;
+                String message = "";
                 try {
                     final ResponseBody body = response.body();
                     if (body != null) {
-                        Log.d(Constants.LOG_TAG, "Retofit succeeded: " + body.toString());
+                        message = body.toString();
+                        Log.d(Constants.LOG_TAG, "Retofit succeeded: " + message);
                         successful = true;
                     } else if (response.errorBody() != null) {
-                        Log.e(Constants.LOG_TAG, "Retofit failed: " + response.errorBody().string());
+                        message = response.errorBody().string();
+                        Log.e(Constants.LOG_TAG, "Retofit failed: " + message);
                     } else {
-                        Log.e(Constants.LOG_TAG, "Retofit failed with code: " + response.code());
+                        message =String.valueOf(response.code());
+                        Log.e(Constants.LOG_TAG, "Retofit failed with code: " + message);
                     }
                 } catch (IOException e) {
                     Log.e(Constants.LOG_TAG, "Retofit failed: " + e.getMessage());
                 }
                 jobFinished(jobParameters, !successful);
                 markAsDone(NextAlarmUpdaterJob.this, successful, triggerTimestamp);
+                insertPublish(new Publish(System.currentTimeMillis(), successful, triggerTimestamp, message));
             }
 
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
-                Log.e(NextAlarmUpdaterJob.class.getName(), "Retofit failed: " + t.getMessage());
+                String message = t.getMessage();
+                Log.e(NextAlarmUpdaterJob.class.getName(), "Retofit failed: " + message);
                 // Fail, reschedule job.
                 jobFinished(jobParameters, true);
                 markAsDone(NextAlarmUpdaterJob.this, false, 0);
+                insertPublish(new Publish(System.currentTimeMillis(), false, triggerTimestamp, message));
             }
         });
 
@@ -232,6 +244,14 @@ public class NextAlarmUpdaterJob extends JobService {
             editor.putLong(Constants.LAST_PUBLISHED_TRIGGER_TIMESTAMP, triggerTimestamp);
         }
         editor.apply();
+    }
+
+    private PublishDao database() {
+        return AppDatabase.getDatabase(getApplicationContext()).publishDao();
+    }
+
+    private void insertPublish(Publish publish) {
+        AsyncTask.execute(() -> database().insertAll(publish));
     }
 
     @AutoValue

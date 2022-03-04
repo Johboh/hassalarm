@@ -62,6 +62,9 @@ public class MainActivity extends AppCompatActivity {
             startActivity(AboutActivity.createIntent(this));
             return true;
         }
+        if(item.getItemId() == R.id.action_history) {
+            startActivity(HistoryActivity.createIntent(this));
+        }
         if (item.getItemId() == R.id.action_banlist) {
             startActivity(BanActivity.createIntent(this));
             return true;

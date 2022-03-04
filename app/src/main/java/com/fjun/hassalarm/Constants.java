@@ -3,7 +3,7 @@ package com.fjun.hassalarm;
 /**
  * Constants shared across the app.
  */
-interface Constants {
+public interface Constants {
 
     enum AccessType {
         LONG_LIVED_TOKEN,
@@ -31,4 +31,5 @@ interface Constants {
     String LAST_PUBLISHED_TRIGGER_TIMESTAMP = "last_published_trigger_timestamp";
     String KEY_IGNORED_PACKAGES = "ignored_packages";
     int DEFAULT_PORT = 8123;
+    String PUBLISH_HISTORY_DB_NAME = "PUBLISH-HISTORY-DB";
 }

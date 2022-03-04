@@ -4,6 +4,7 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.text.method.ScrollingMovementMethod;
@@ -15,6 +16,9 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.fjun.hassalarm.databinding.ActivityTestConnectionBinding;
+import com.fjun.hassalarm.history.AppDatabase;
+import com.fjun.hassalarm.history.Publish;
+import com.fjun.hassalarm.history.PublishDao;
 
 import java.io.IOException;
 import java.util.HashSet;
@@ -190,6 +194,7 @@ public class TestConnectionActivity extends AppCompatActivity {
               this, mHost, mToken, mEntityId, mAccessType, mEntityIdIsLegacy, new HashSet<>());
 
       final Call<ResponseBody> call = mRequest.call();
+      long triggerTimestamp = mRequest.triggerTimestamp();
       mBinding.log.append(
           getString(R.string.using_url, call.request().method(), call.request().url().toString())
               + "\n");
@@ -200,31 +205,41 @@ public class TestConnectionActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
               boolean wasSuccessful = false;
+              String message = "";
               try (ResponseBody body = response.body()) {
                 if (body != null) {
-                  mBinding.log.append(getString(R.string.connection_ok, body.string()) + "\n");
+                  message = body.string();
+                  mBinding.log.append(getString(R.string.connection_ok, message) + "\n");
                   wasSuccessful = true;
                 } else if (response.errorBody() != null) {
+                  message = response.errorBody().string();
                   mBinding.log.append(
-                      getString(R.string.connection_failure, response.errorBody().string()) + "\n");
+                      getString(R.string.connection_failure, message) + "\n");
                 } else {
+                  message = String.valueOf(response.code());
                   mBinding.log.append(
-                      getString(R.string.connection_failure_code, response.code()) + "\n");
+                      getString(R.string.connection_failure_code, message) + "\n");
                 }
               } catch (IOException e) {
-                mBinding.log.append(getString(R.string.connection_failure, e.getMessage()) + "\n");
+                message = e.getMessage();
+                mBinding.log.append(getString(R.string.connection_failure, message) + "\n");
               }
+              insertPublish(new Publish(System.currentTimeMillis(), wasSuccessful, triggerTimestamp, message));
               markAsDone(wasSuccessful);
             }
 
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
-              mBinding.log.append(getString(R.string.connection_failure, t.getMessage()) + "\n");
+              final String message = t.getMessage();
+              mBinding.log.append(getString(R.string.connection_failure, message) + "\n");
+              insertPublish(new Publish(System.currentTimeMillis(), false, triggerTimestamp, message));
               markAsDone(false);
             }
           });
     } catch (IllegalArgumentException e) {
-      mBinding.log.append(e.getMessage() + "\n");
+      final String message = e.getMessage();
+      mBinding.log.append(message + "\n");
+      insertPublish(new Publish(System.currentTimeMillis(), false, 0L, message));
       markAsDone(false);
     }
 
@@ -249,5 +264,13 @@ public class TestConnectionActivity extends AppCompatActivity {
     intent.putExtra(KEY_LAST_SUCCESSFUL, mLastRunWasSuccessful);
     setResult(AppCompatActivity.RESULT_OK, intent);
     registerForContextMenu(mBinding.log);
+  }
+
+  private PublishDao database() {
+    return AppDatabase.getDatabase(getApplicationContext()).publishDao();
+  }
+
+  private void insertPublish(Publish publish) {
+    AsyncTask.execute(() -> database().insertAll(publish));
   }
 }

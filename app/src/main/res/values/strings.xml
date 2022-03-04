@@ -22,7 +22,7 @@
     <string name="help_text_fourth">Home Assistant configuration help, questions or issues, visit https://github.com/Johboh/hassalarm</string>
     <string name="connection_ok">Success, response: %s\n</string>
     <string name="connection_failure">Failure: %s\n</string>
-    <string name="connection_failure_code">Failure, code: %d\n</string>
+    <string name="connection_failure_code">Failure, code: %s\n</string>
     <string name="help_text_about">About</string>
     <string name="published_successfully">Published Successfully</string>
     <string name="failed_to_publish">Publish failed, check connection details</string>
@@ -54,4 +54,12 @@
     <string name="ban_no_alarm_set"><![CDATA[<none>]]></string>
     <string name="ban_row_remove">Remove</string>
     <string name="main_next_is_ignored_app">Next alarm is from an ignored app.</string>
+    <string name="action_history">Publish history</string>
+    <string name="history_info">History over all published attempts. Tap rows to show full error string, if available.</string>
+    <string name="history_row_publish_time">\@ %s</string>
+    <string name="history_row_publish_trigger_time">alarm \@: %s</string>
+    <string name="history_error_dialog_title">Error message</string>
+    <string name="history_error_dialog_button_ok">OK</string>
+    <string name="history_clear">Clear history</string>
+    <string name="history_cleared">History cleared</string>
 </resources>

@@ -42,6 +42,7 @@
             android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".AboutActivity" />
         <activity android:name=".BanActivity" />
+        <activity android:name=".HistoryActivity" />
         <activity android:name=".TestConnectionActivity" android:theme="@style/AppTheme.NoActionBar" />
     </application>
 
