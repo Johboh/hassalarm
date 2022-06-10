@@ -46,6 +46,7 @@ public class NextAlarmUpdaterJob extends JobService {
     private static final SimpleDateFormat DATE_FORMAT_LEGACY = new SimpleDateFormat("yyyy-MM-dd HH:mm:00", Locale.ENGLISH);
     private static final int MAX_EXECUTION_DELAY_MS = 3600 * 1000; // 1h
     private static final int BACKOFF_MS = 60 * 1000; // 1m
+    private static final int MINIMUM_LATENCY_MS = 5 * 1000; // 5s
     static final int JOB_ID = 0;
 
     private Call<ResponseBody> mCall;
@@ -241,6 +242,7 @@ public class NextAlarmUpdaterJob extends JobService {
                 .setRequiresCharging(false)
                 .setRequiresDeviceIdle(false)
                 .setBackoffCriteria(BACKOFF_MS, BACKOFF_POLICY_LINEAR)
+                .setMinimumLatency(MINIMUM_LATENCY_MS)
                 .setOverrideDeadline(deadline(context))
                 .build();
         JobScheduler jobScheduler = (JobScheduler) context.getSystemService(Context.JOB_SCHEDULER_SERVICE);
