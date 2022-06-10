@@ -71,6 +71,16 @@ public class NextAlarmUpdaterJob extends JobService {
             return false;
         }
 
+        // No need to publish the same timestamp if we already had an successful publish
+        final SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        final long lastPublishedTriggerTime = sharedPreferences.getLong(Constants.LAST_PUBLISHED_TRIGGER_TIMESTAMP, -1);
+        if (triggerTimestamp == lastPublishedTriggerTime) {
+            Log.d(Constants.LOG_TAG, "Trigger timestamp already published. Bail.");
+            jobFinished(jobParameters, false);
+            return false;
+        }
+
+
         Log.d(Constants.LOG_TAG, "Enqueueing retrofit job.");
         mCall.enqueue(new Callback<ResponseBody>() {
             @Override
