@@ -6,11 +6,11 @@ android {
     viewBinding {
         enabled = true
     }
-    compileSdkVersion 31
+    compileSdkVersion 32
     defaultConfig {
         applicationId "com.fjun.hassalarm"
         minSdkVersion 23
-        targetSdkVersion 31
+        targetSdkVersion 32
         versionCode 20
         versionName "1.20"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
