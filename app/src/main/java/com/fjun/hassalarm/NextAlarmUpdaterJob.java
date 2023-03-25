@@ -60,15 +60,17 @@ public class NextAlarmUpdaterJob extends JobService {
         }
 
         final long triggerTimestamp;
+        final String creatorPackage;
         try {
             final Request request = createRequest(this);
             triggerTimestamp = request.triggerTimestamp();
+            creatorPackage = request.creatorPackage();
             mCall = request.call();
         } catch (IllegalArgumentException e) {
             Log.e(Constants.LOG_TAG, "Failed to create request: " + e.getMessage());
             jobFinished(jobParameters, true);
             markAsDone(this, false, 0);
-            insertPublish(new Publish(System.currentTimeMillis(), false, 0L, e.getMessage()));
+            insertPublish(new Publish(System.currentTimeMillis(), false, 0L, e.getMessage(), null));
             return false;
         }
 
@@ -106,7 +108,7 @@ public class NextAlarmUpdaterJob extends JobService {
                 }
                 jobFinished(jobParameters, !successful);
                 markAsDone(NextAlarmUpdaterJob.this, successful, triggerTimestamp);
-                insertPublish(new Publish(System.currentTimeMillis(), successful, triggerTimestamp, message));
+                insertPublish(new Publish(System.currentTimeMillis(), successful, triggerTimestamp, message, creatorPackage));
             }
 
             @Override
@@ -116,7 +118,7 @@ public class NextAlarmUpdaterJob extends JobService {
                 // Fail, reschedule job.
                 jobFinished(jobParameters, true);
                 markAsDone(NextAlarmUpdaterJob.this, false, 0);
-                insertPublish(new Publish(System.currentTimeMillis(), false, triggerTimestamp, message));
+                insertPublish(new Publish(System.currentTimeMillis(), false, triggerTimestamp, message, creatorPackage));
             }
         });
 
@@ -184,6 +186,7 @@ public class NextAlarmUpdaterJob extends JobService {
         final State state;
         final Datetime datetime;
         final long triggerTimestamp;
+        final String creatorPackage;
         if (alarmClockInfo != null) {
             // Ignored package?
             final PendingIntent showIntent = alarmClockInfo.getShowIntent();
@@ -192,10 +195,12 @@ public class NextAlarmUpdaterJob extends JobService {
                 // Ignore!
                 Log.d(Constants.LOG_TAG, "Package " + packageName + " is in ignored list. Ignoring alarm for this package.");
                 triggerTimestamp = 0;
+                creatorPackage = null;
                 state = new State("");
                 datetime = new Datetime(entityId, 1);
             } else {
                 triggerTimestamp = alarmClockInfo.getTriggerTime();
+                creatorPackage = packageName;
                 final Calendar calendar = Calendar.getInstance();
                 calendar.setTimeInMillis(triggerTimestamp);
                 state = new State(DATE_FORMAT_LEGACY.format(calendar.getTime()));
@@ -203,6 +208,7 @@ public class NextAlarmUpdaterJob extends JobService {
             }
         } else {
             triggerTimestamp = 0;
+            creatorPackage = "";
             state = new State("");
             datetime = new Datetime(entityId, 1);
         }
@@ -228,7 +234,7 @@ public class NextAlarmUpdaterJob extends JobService {
                 call = hassApi.setInputDatetimeUsingApiKey(datetime, apiKeyOrToken);
             }
         }
-        return Request.create(call, triggerTimestamp);
+        return Request.create(call, triggerTimestamp, creatorPackage);
     }
 
     /**
@@ -303,8 +309,10 @@ public class NextAlarmUpdaterJob extends JobService {
 
         public abstract long triggerTimestamp();
 
-        static Request create(Call<ResponseBody> call, long triggerTimestamp) {
-            return new AutoValue_NextAlarmUpdaterJob_Request(call, triggerTimestamp);
+        public abstract String creatorPackage();
+
+        static Request create(Call<ResponseBody> call, long triggerTimestamp, String creatorPackage) {
+            return new AutoValue_NextAlarmUpdaterJob_Request(call, triggerTimestamp, creatorPackage);
         }
     }
 }

@@ -40,8 +40,13 @@ class HistoryAdapter(private val onItemClick: (Publish) -> Unit) :
             )
 
             val hasErrorMessage = !publish.successful && !publish.errorMessage.isNullOrEmpty()
-            bindings.errorMessage.text = publish.errorMessage
-            bindings.errorMessage.isVisible = hasErrorMessage
+            val hasCreatorPackage = !publish.creatorPackage.isNullOrEmpty()
+            bindings.message.text = when {
+                hasErrorMessage -> publish.errorMessage
+                hasCreatorPackage -> publish.creatorPackage
+                else -> ""
+            }
+            bindings.message.isVisible = hasErrorMessage || hasCreatorPackage
             if (hasErrorMessage) {
                 bindings.root.setOnClickListener { onItemClick(publish) }
             } else {

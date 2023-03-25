@@ -195,6 +195,7 @@ public class TestConnectionActivity extends AppCompatActivity {
 
       final Call<ResponseBody> call = mRequest.call();
       long triggerTimestamp = mRequest.triggerTimestamp();
+      String creatorPackage = mRequest.creatorPackage();
       mBinding.log.append(
           getString(R.string.using_url, call.request().method(), call.request().url().toString())
               + "\n");
@@ -224,7 +225,7 @@ public class TestConnectionActivity extends AppCompatActivity {
                 message = e.getMessage();
                 mBinding.log.append(getString(R.string.connection_failure, message) + "\n");
               }
-              insertPublish(new Publish(System.currentTimeMillis(), wasSuccessful, triggerTimestamp, message));
+              insertPublish(new Publish(System.currentTimeMillis(), wasSuccessful, triggerTimestamp, message, creatorPackage));
               markAsDone(wasSuccessful);
             }
 
@@ -232,14 +233,14 @@ public class TestConnectionActivity extends AppCompatActivity {
             public void onFailure(Call<ResponseBody> call, Throwable t) {
               final String message = t.getMessage();
               mBinding.log.append(getString(R.string.connection_failure, message) + "\n");
-              insertPublish(new Publish(System.currentTimeMillis(), false, triggerTimestamp, message));
+              insertPublish(new Publish(System.currentTimeMillis(), false, triggerTimestamp, message, creatorPackage));
               markAsDone(false);
             }
           });
     } catch (IllegalArgumentException e) {
       final String message = e.getMessage();
       mBinding.log.append(message + "\n");
-      insertPublish(new Publish(System.currentTimeMillis(), false, 0L, message));
+      insertPublish(new Publish(System.currentTimeMillis(), false, 0L, message, null));
       markAsDone(false);
     }
 

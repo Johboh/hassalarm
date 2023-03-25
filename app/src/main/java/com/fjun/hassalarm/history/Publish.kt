@@ -9,6 +9,7 @@ data class Publish(
     val successful: Boolean,
     val triggerTimestamp: Long? = null,
     val errorMessage: String? = null,
+    val creatorPackage: String? = null,
 ) {
     @PrimaryKey(autoGenerate = true)
     var id: Long = 0

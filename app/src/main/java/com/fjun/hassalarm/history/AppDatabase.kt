@@ -1,12 +1,18 @@
 package com.fjun.hassalarm.history
 
 import android.content.Context
+import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.fjun.hassalarm.Constants
 
-@Database(entities = [Publish::class], version = 2, exportSchema = false)
+@Database(
+    entities = [Publish::class],
+    version = 3,
+    exportSchema = true,
+    autoMigrations = [AutoMigration (from = 2, to = 3)]
+)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun publishDao(): PublishDao
 
