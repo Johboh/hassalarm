@@ -71,7 +71,6 @@ class HistoryActivity : AppCompatActivity() {
     }
 
     companion object {
-        @JvmStatic
         fun createIntent(context: Context) = Intent(context, HistoryActivity::class.java)
     }
 }

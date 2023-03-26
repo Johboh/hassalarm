@@ -1,145 +1,169 @@
-package com.fjun.hassalarm;
+package com.fjun.hassalarm
 
-import android.app.AlarmManager;
-import android.app.PendingIntent;
-import android.content.SharedPreferences;
-import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
-import android.widget.TextView;
+import android.app.AlarmManager
+import android.app.AlarmManager.AlarmClockInfo
+import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
+import android.view.View
+import android.widget.TextView
+import androidx.annotation.StringRes
+import androidx.appcompat.app.AppCompatActivity
+import com.fjun.hassalarm.HistoryActivity.Companion.createIntent
+import com.fjun.hassalarm.databinding.ActivityMainBinding
+import com.fjun.hassalarm.databinding.ContentMainBinding
+import java.text.SimpleDateFormat
+import java.util.*
 
-import androidx.annotation.NonNull;
-import androidx.annotation.StringRes;
-import androidx.appcompat.app.AppCompatActivity;
+class MainActivity : AppCompatActivity() {
+    private lateinit var binding: ContentMainBinding
 
-import com.fjun.hassalarm.databinding.ActivityMainBinding;
-import com.fjun.hassalarm.databinding.ContentMainBinding;
-
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.HashSet;
-import java.util.Locale;
-import java.util.Set;
-
-import static com.fjun.hassalarm.Constants.KEY_IGNORED_PACKAGES;
-import static com.fjun.hassalarm.Constants.PREFS_NAME;
-
-public class MainActivity extends AppCompatActivity {
-
-    private ContentMainBinding mBinding;
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        final ActivityMainBinding binding = ActivityMainBinding.inflate(getLayoutInflater());
-        setContentView(binding.root);
-        setSupportActionBar(binding.toolbar);
-        mBinding = binding.content;
-
-        mBinding.editConnection.setOnClickListener(v -> startActivity(EditConnectionActivity.createIntent(this)));
-
-        updateView();
-
-        NextAlarmUpdaterJob.scheduleJob(this);
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        updateView();
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == R.id.action_about) {
-            startActivity(AboutActivity.createIntent(this));
-            return true;
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        val binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        setSupportActionBar(binding.toolbar)
+        this.binding = binding.content
+        this.binding.editConnection.setOnClickListener {
+            startActivity(EditConnectionActivity.createIntent(this))
         }
-        if(item.getItemId() == R.id.action_history) {
-            startActivity(HistoryActivity.createIntent(this));
-        }
-        if (item.getItemId() == R.id.action_banlist) {
-            startActivity(BanActivity.createIntent(this));
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
+        updateView()
+        NextAlarmUpdaterJob.scheduleJob(this)
     }
 
-    private void updateView() {
-        final SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-        final boolean wasSuccessful = sharedPreferences.getBoolean(Constants.LAST_PUBLISH_WAS_SUCCESSFUL, false);
-        final long lastAttempt = sharedPreferences.getLong(Constants.LAST_PUBLISH_ATTEMPT, 0);
-        final long lastSuccessfulAttempt = sharedPreferences.getLong(Constants.LAST_SUCCESSFUL_PUBLISH, 0);
-        final long lastPublishedTriggerTime = sharedPreferences.getLong(Constants.LAST_PUBLISHED_TRIGGER_TIMESTAMP, -1);
-        final long triggerTime = getTriggerTime();
+    override fun onResume() {
+        super.onResume()
+        updateView()
+    }
 
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.menu_main, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if (item.itemId == R.id.action_about) {
+            startActivity(AboutActivity.createIntent(this))
+            return true
+        }
+        if (item.itemId == R.id.action_history) {
+            startActivity(createIntent(this))
+        }
+        if (item.itemId == R.id.action_banlist) {
+            startActivity(BanActivity.createIntent(this))
+            return true
+        }
+        return super.onOptionsItemSelected(item)
+    }
+
+    private fun updateView() {
+        val sharedPreferences =
+            getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
+        val wasSuccessful =
+            sharedPreferences.getBoolean(
+                LAST_PUBLISH_WAS_SUCCESSFUL,
+                false
+            )
+        val lastAttempt =
+            sharedPreferences.getLong(LAST_PUBLISH_ATTEMPT, 0)
+        val lastSuccessfulAttempt =
+            sharedPreferences.getLong(
+                LAST_SUCCESSFUL_PUBLISH,
+                0
+            )
+        val lastPublishedTriggerTime =
+            sharedPreferences.getLong(
+                LAST_PUBLISHED_TRIGGER_TIMESTAMP,
+                -1
+            )
+        val triggerTime = triggerTime
         if (wasSuccessful) {
-            mBinding.successful.setText(R.string.published_successfully);
-            mBinding.successfulPublishAt.setVisibility(View.GONE);
-            setLastPublishAt(R.string.last_publish_at, mBinding.publishAt, lastAttempt);
+            binding.successful.setText(R.string.published_successfully)
+            binding.successfulPublishAt.visibility = View.GONE
+            setLastPublishAt(R.string.last_publish_at, binding.publishAt, lastAttempt)
         } else if (triggerTime > 0 && triggerTime == lastPublishedTriggerTime) {
             // If last run was not successful, but if there has been a successful run that published the
             // value of next scheduled alarm, then we are considered successful.
-            mBinding.successful.setText(R.string.published_successfully);
-            mBinding.successfulPublishAt.setVisibility(View.GONE);
-            setLastPublishAt(R.string.last_successful_publish_at, mBinding.publishAt, lastSuccessfulAttempt);
+            binding.successful.setText(R.string.published_successfully)
+            binding.successfulPublishAt.visibility = View.GONE
+            setLastPublishAt(
+                R.string.last_successful_publish_at,
+                binding.publishAt,
+                lastSuccessfulAttempt
+            )
         } else {
             if (lastAttempt > 0) {
-                mBinding.successful.setText(R.string.failed_to_publish);
-                setLastPublishAt(R.string.last_failed_publish_at, mBinding.publishAt, lastAttempt);
+                binding.successful.setText(R.string.failed_to_publish)
+                setLastPublishAt(R.string.last_failed_publish_at, binding.publishAt, lastAttempt)
             } else {
-                mBinding.successful.setText(R.string.failed_no_connection);
-                mBinding.publishAt.setVisibility(View.GONE);
+                binding.successful.setText(R.string.failed_no_connection)
+                binding.publishAt.visibility = View.GONE
             }
             if (lastSuccessfulAttempt > 0) {
-                setLastPublishAt(R.string.last_successful_publish_at, mBinding.successfulPublishAt, lastSuccessfulAttempt);
+                setLastPublishAt(
+                    R.string.last_successful_publish_at,
+                    binding.successfulPublishAt,
+                    lastSuccessfulAttempt
+                )
             } else {
-                mBinding.successfulPublishAt.setVisibility(View.GONE);
+                binding.successfulPublishAt.visibility = View.GONE
             }
         }
-
-        showNextAlarm(mBinding.nextAlarm, sharedPreferences.getStringSet(KEY_IGNORED_PACKAGES, new HashSet<>()));
+        showNextAlarm(
+            binding.nextAlarm,
+            sharedPreferences.getStringSet(
+                KEY_IGNORED_PACKAGES,
+                HashSet()
+            )
+        )
     }
 
-    private void setLastPublishAt(@StringRes int res, TextView textView, Long time) {
-        final Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(time);
-        textView.setText(getString(res, new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(calendar.getTime())));
-        textView.setVisibility(View.VISIBLE);
+    private fun setLastPublishAt(@StringRes res: Int, textView: TextView, time: Long) {
+        val calendar = Calendar.getInstance()
+        calendar.timeInMillis = time
+        textView.text = getString(
+            res,
+            SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+                .format(calendar.time)
+        )
+        textView.visibility = View.VISIBLE
     }
 
-    private void showNextAlarm(TextView textView, Set<String> ignoredPackages) {
-        final long triggerTime = getTriggerTime();
+    private fun showNextAlarm(textView: TextView, ignoredPackages: Set<String>?) {
+        val triggerTime = triggerTime
 
         // Ignored?
-        final AlarmManager.AlarmClockInfo alarmClockInfo = alarmClockInfo();
-        final PendingIntent pendingIntent = alarmClockInfo != null ? alarmClockInfo.getShowIntent() : null;
-        final String packageName = pendingIntent != null ? pendingIntent.getCreatorPackage() : "<no-package>";
-        if (packageName != null && ignoredPackages.contains(packageName)) {
-            textView.setText(R.string.main_next_is_ignored_app);
+        val alarmClockInfo = alarmClockInfo()
+        val pendingIntent = alarmClockInfo?.showIntent
+        val packageName =
+            if (pendingIntent != null) {
+                pendingIntent.creatorPackage
+            } else {
+                "<no-package>"
+            }
+        if (packageName != null && ignoredPackages?.contains(packageName) == true) {
+            textView.setText(R.string.main_next_is_ignored_app)
         } else if (triggerTime <= 0) {
-            textView.setText(getString(R.string.no_scheduled_alarm));
+            textView.text = getString(R.string.no_scheduled_alarm)
         } else {
-            final Calendar calendar = Calendar.getInstance();
-            calendar.setTimeInMillis(triggerTime);
-            textView.setText(getString(R.string.next_alarm, new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(calendar.getTime())));
+            val calendar = Calendar.getInstance()
+            calendar.timeInMillis = triggerTime
+            textView.text = getString(
+                R.string.next_alarm,
+                SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
+                    .format(calendar.time)
+            )
         }
     }
 
-    private AlarmManager.AlarmClockInfo alarmClockInfo() {
-        final AlarmManager alarmManager = getSystemService(AlarmManager.class);
-        return alarmManager.getNextAlarmClock();
+    private fun alarmClockInfo(): AlarmClockInfo? {
+        val alarmManager = getSystemService(AlarmManager::class.java)
+        return alarmManager.nextAlarmClock
     }
 
-    private long getTriggerTime() {
-        final AlarmManager.AlarmClockInfo nextAlarm = alarmClockInfo();
-        return nextAlarm == null ? -1 : nextAlarm.getTriggerTime();
-    }
+    private val triggerTime: Long
+        get() {
+            val nextAlarm = alarmClockInfo()
+            return nextAlarm?.triggerTime ?: -1
+        }
 }

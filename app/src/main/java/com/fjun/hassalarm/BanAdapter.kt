@@ -1,75 +1,51 @@
-package com.fjun.hassalarm;
+package com.fjun.hassalarm
 
-import android.view.LayoutInflater;
-import android.view.ViewGroup;
-
-import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.RecyclerView;
-
-import com.fjun.hassalarm.databinding.RowIgnoredAppsBinding;
-
-import java.util.ArrayList;
-import java.util.List;
+import android.view.LayoutInflater
+import android.view.ViewGroup
+import androidx.recyclerview.widget.RecyclerView
+import com.fjun.hassalarm.databinding.RowIgnoredAppsBinding
 
 /**
  * Adapter for showing banned/ignored apps.
  */
-public class BanAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+class BanAdapter(private val interactionListener: (packageName: String) -> Unit) :
+    RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
-    public interface InteractionListener {
-        // Passing back adapter.. ugly.. fix.
-        void onRemove(@NonNull String packageName, @NonNull BanAdapter adapter);
+    private var packages: List<String> = emptyList()
+
+    init {
+        setHasStableIds(true)
     }
 
-    private final InteractionListener mInteractionListener;
-    private final List<String> mPackages = new ArrayList<>(0);
-
-    public BanAdapter(@NonNull InteractionListener interactionListener) {
-        mInteractionListener = interactionListener;
-        setHasStableIds(true);
+    fun set(packages: List<String>) {
+        this.packages = packages
+        notifyDataSetChanged()
     }
 
-    public void set(@NonNull List<String> packages) {
-        mPackages.clear();
-        mPackages.addAll(packages);
-        notifyDataSetChanged();
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        val binding = RowIgnoredAppsBinding.inflate(LayoutInflater.from(parent.context))
+        return Row(binding)
     }
 
-    @NonNull
-    @Override
-    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        RowIgnoredAppsBinding binding = RowIgnoredAppsBinding.inflate(LayoutInflater.from(parent.getContext()));
-        return new Row(binding);
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        val row = holder as Row
+        row.bind(packages[position])
     }
 
-    @Override
-    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-        Row row = (Row) holder;
-        row.bind(mPackages.get(position));
-    }
+    override fun getItemCount(): Int = packages.size
 
-    @Override
-    public int getItemCount() {
-        return mPackages.size();
-    }
+    override fun getItemId(position: Int): Long
+        = packages[position].hashCode().toLong()
 
-    @Override
-    public long getItemId(int position) {
-        return mPackages.get(position).hashCode();
-    }
-
-    private class Row extends RecyclerView.ViewHolder {
-
-        private final RowIgnoredAppsBinding mBinding;
-
-        public Row(@NonNull RowIgnoredAppsBinding rowIgnoredAppsBinding) {
-            super(rowIgnoredAppsBinding.getRoot());
-            mBinding = rowIgnoredAppsBinding;
-        }
-
-        public void bind(@NonNull String packageName) {
-            mBinding.title.setText(packageName);
-            mBinding.remove.setOnClickListener(v -> mInteractionListener.onRemove(packageName, BanAdapter.this));
+    private inner class Row(private val binding: RowIgnoredAppsBinding) :
+        RecyclerView.ViewHolder(binding.root) {
+        fun bind(packageName: String) {
+            with(binding) {
+                title.text = packageName
+                remove.setOnClickListener {
+                    interactionListener(packageName)
+                }
+            }
         }
     }
 }

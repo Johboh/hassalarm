@@ -1,80 +1,79 @@
-package com.fjun.hassalarm;
+package com.fjun.hassalarm
 
-import android.app.AlarmManager;
-import android.app.PendingIntent;
-import android.content.Context;
-import android.content.Intent;
-import android.content.SharedPreferences;
-import android.os.Bundle;
+import android.app.AlarmManager
+import android.content.Context
+import android.content.Intent
+import android.content.SharedPreferences
+import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.fjun.hassalarm.databinding.ActivityBanlistBinding
 
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
+class BanActivity : AppCompatActivity() {
 
-import com.fjun.hassalarm.databinding.ActivityBanlistBinding;
+    private lateinit var adapter: BanAdapter
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        val binding = ActivityBanlistBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-import static com.fjun.hassalarm.Constants.KEY_IGNORED_PACKAGES;
-import static com.fjun.hassalarm.Constants.PREFS_NAME;
+        val alarmManager = getSystemService(AlarmManager::class.java)
+        val alarmClockInfo = alarmManager.nextAlarmClock
+        val missingPackageName = getString(R.string.ban_no_alarm_set)
+        val pendingIntent = alarmClockInfo?.showIntent
+        val pendingPackageName =
+            if (pendingIntent != null) {
+                pendingIntent.creatorPackage
+            } else {
+                missingPackageName
+            }
 
-public class BanActivity extends AppCompatActivity {
-
-    @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        com.fjun.hassalarm.databinding.ActivityBanlistBinding mBinding = ActivityBanlistBinding.inflate(getLayoutInflater());
-        setContentView(mBinding.root);
-
-        final AlarmManager alarmManager = getSystemService(AlarmManager.class);
-        final AlarmManager.AlarmClockInfo alarmClockInfo = alarmManager.getNextAlarmClock();
-
-        final String missingPackageName = getString(R.string.ban_no_alarm_set);
-        final PendingIntent pendingIntent = alarmClockInfo != null ? alarmClockInfo.getShowIntent() : null;
-        final String pendingPackageName = pendingIntent != null ? pendingIntent.getCreatorPackage() : missingPackageName;
-        mBinding.add.setEnabled(pendingIntent != null);
-
-        mBinding.nextPackage.setText(pendingPackageName != null ? pendingPackageName : missingPackageName);
-
-        final SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-
-        mBinding.list.setLayoutManager(new LinearLayoutManager(this));
-        final BanAdapter adapter = new BanAdapter((packageName, adapter1) -> {
+        val sharedPreferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
+        adapter = BanAdapter { packageName: String ->
             // REMOVE
-            final Set<String> set = sharedPreferences.getStringSet(KEY_IGNORED_PACKAGES, new HashSet<>());
-            set.remove(packageName);
-            save(sharedPreferences, set);
-            setList(sharedPreferences, adapter1);
-        });
-        mBinding.list.setAdapter(adapter);
+            val set = sharedPreferences
+                .getStringSet(KEY_IGNORED_PACKAGES, HashSet<String>())?: setOf()
+            val newSet = set.toMutableSet().apply {
+                remove(packageName)
+            }
+            save(sharedPreferences, newSet)
+            setList(sharedPreferences, adapter)
+        }
 
-        mBinding.add.setOnClickListener(
-                v -> {
-                    // ADD
-                    if (pendingIntent != null) {
-                        final Set<String> set =
-                                sharedPreferences.getStringSet(KEY_IGNORED_PACKAGES, new HashSet<>());
-                        set.add(pendingIntent.getCreatorPackage());
-                        save(sharedPreferences, set);
-                        setList(sharedPreferences, adapter);
+        with (binding) {
+            add.isEnabled = pendingIntent != null
+            nextPackage.text = pendingPackageName ?: missingPackageName
+            list.layoutManager = LinearLayoutManager(this@BanActivity)
+            list.adapter = adapter
+            add.setOnClickListener {
+                // ADD
+                val creatorPackage = pendingIntent?.creatorPackage
+                if (!creatorPackage.isNullOrEmpty()) {
+                    val set = sharedPreferences
+                        .getStringSet(KEY_IGNORED_PACKAGES, HashSet<String>())?: setOf()
+                    val newSet = set.toMutableSet().apply {
+                        add(creatorPackage)
                     }
-                });
+                    save(sharedPreferences, newSet)
+                    setList(sharedPreferences, adapter)
+                }
+            }
+        }
 
-        // LOAD
-        setList(sharedPreferences, adapter);
+        setList(sharedPreferences, adapter)
     }
 
-    private static void setList(SharedPreferences sharedPreferences, BanAdapter adapter) {
-        adapter.set(new ArrayList<>(sharedPreferences.getStringSet(KEY_IGNORED_PACKAGES, new HashSet<>())));
+    private fun setList(sharedPreferences: SharedPreferences, adapter: BanAdapter) {
+        adapter.set((sharedPreferences.getStringSet(KEY_IGNORED_PACKAGES, HashSet<String>())?:setOf()).toList())
     }
 
-    private static void save(SharedPreferences sharedPreferences, Set<String> set) {
-        sharedPreferences.edit().putStringSet(KEY_IGNORED_PACKAGES, set).apply();
+    private fun save(sharedPreferences: SharedPreferences, set: Set<String>) {
+        sharedPreferences.edit().putStringSet(KEY_IGNORED_PACKAGES, set)
+            .apply()
     }
 
-    public static Intent createIntent(Context context) {
-        return new Intent(context, BanActivity.class);
+    companion object {
+        fun createIntent(context: Context?): Intent = Intent(context, BanActivity::class.java)
     }
 }

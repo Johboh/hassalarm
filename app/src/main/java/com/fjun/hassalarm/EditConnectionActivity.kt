@@ -1,187 +1,189 @@
-package com.fjun.hassalarm;
+package com.fjun.hassalarm
 
-import android.content.Context;
-import android.content.Intent;
-import android.content.SharedPreferences;
-import android.os.Bundle;
-import android.view.MenuItem;
-import android.widget.Toast;
+import android.content.Context
+import android.content.Intent
+import android.os.Bundle
+import android.view.MenuItem
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import com.fjun.hassalarm.databinding.ActivityEditConnectionBinding
+import com.fjun.hassalarm.databinding.ContentEditConnectionBinding
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
+private const val REQUEST_CODE_TEST_CONNECTION = 12
+private const val KEY_LAST_SUCCESSFUL = "last_run_successful"
 
-import com.fjun.hassalarm.databinding.ActivityEditConnectionBinding;
-import com.fjun.hassalarm.databinding.ContentEditConnectionBinding;
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+class EditConnectionActivity : AppCompatActivity() {
+    private var lastRunWasSuccessful: Boolean? = null
+    private lateinit var binding: ContentEditConnectionBinding
 
-import static com.fjun.hassalarm.Constants.KEY_PREFS_ACCESS_TYPE;
-import static com.fjun.hassalarm.Constants.KEY_PREFS_API_KEY;
-import static com.fjun.hassalarm.Constants.KEY_PREFS_ENTITY_ID;
-import static com.fjun.hassalarm.Constants.KEY_PREFS_HOST;
-import static com.fjun.hassalarm.Constants.KEY_PREFS_IS_ENTITY_ID_LEGACY;
-import static com.fjun.hassalarm.Constants.PREFS_NAME;
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        val binding = ActivityEditConnectionBinding.inflate(
+            layoutInflater
+        )
+        setContentView(binding.root)
+        setSupportActionBar(binding.toolbar)
+        this.binding = binding.content
+        if (savedInstanceState != null) {
+            lastRunWasSuccessful = savedInstanceState.getBoolean(KEY_LAST_SUCCESSFUL, false)
+        }
 
-public class EditConnectionActivity extends AppCompatActivity {
+        // Set current saved host and api key.
+        val sharedPreferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
 
-  private static final int REQUEST_CODE_TEST_CONNECTION = 12;
-  private static final String KEY_LAST_SUCCESSFUL = "last_run_successful";
+        with(binding.content) {
+            testButton.setOnClickListener {
+                val host = hostInput.text.toString().trim()
+                val token = apiKeyInput.text.toString().trim()
+                val entityId = entityIdInput.text.toString().trim()
+                val entityIdIsLegacy = isEntityLegacy.isChecked
+                lastRunWasSuccessful = null
+                startActivityForResult(
+                    TestConnectionActivity.createIntent(
+                        this@EditConnectionActivity,
+                        host,
+                        token,
+                        entityId,
+                        accessType,
+                        entityIdIsLegacy
+                    ),
+                    REQUEST_CODE_TEST_CONNECTION
+                )
+            }
 
-  private Boolean mLastRunWasSuccessful;
-  private ContentEditConnectionBinding mBinding;
+            hostInput.setText(sharedPreferences.getString(KEY_PREFS_HOST, ""))
+            apiKeyInput.setText(sharedPreferences.getString(KEY_PREFS_API_KEY, ""))
 
-  public static Intent createIntent(Context context) {
-    return new Intent(context, EditConnectionActivity.class);
-  }
+            keyType.setOnCheckedChangeListener { _, checkedId: Int ->
+                isEntityLegacy.isEnabled = checkedId != keyIsWebhook.id
 
-  @Override
-  protected void onCreate(Bundle savedInstanceState) {
-    super.onCreate(savedInstanceState);
-    final ActivityEditConnectionBinding binding =
-        ActivityEditConnectionBinding.inflate(getLayoutInflater());
-    setContentView(binding.root);
-    setSupportActionBar(binding.toolbar);
-    mBinding = binding.content;
+                apiKey.hint = when (checkedId) {
+                    keyIsToken.id -> keyIsToken.text
+                    keyIsWebhook.id -> keyIsWebhook.text
+                    keyIsLegacy.id -> keyIsLegacy.text
+                    else -> ""
+                }
+            }
+        }
 
-    if (savedInstanceState != null) {
-      mLastRunWasSuccessful = savedInstanceState.getBoolean(KEY_LAST_SUCCESSFUL, false);
+        val activeRadioButton: Int
+        val accessType = Migration.getAccessType(sharedPreferences)
+        activeRadioButton = when (accessType) {
+            AccessType.LONG_LIVED_TOKEN -> binding.content.keyIsToken.id
+            AccessType.WEB_HOOK -> binding.content.keyIsWebhook.id
+            else -> binding.content.keyIsLegacy.id
+        }
+        binding.content.keyType.check(activeRadioButton)
+
+        // Migration of old versions to new versions
+        with(binding.content) {
+            entityIdInput.setText(Migration.getEntityId(sharedPreferences))
+            isEntityLegacy.isChecked = Migration.entityIdIsLegacy(sharedPreferences)
+            save.setOnClickListener {
+                val type: AccessType = if (keyIsToken.isChecked) {
+                    AccessType.LONG_LIVED_TOKEN
+                } else if (keyIsWebhook.isChecked) {
+                    AccessType.WEB_HOOK
+                } else {
+                    AccessType.LEGACY_API_KEY
+                }
+                sharedPreferences
+                    .edit()
+                    .putString(KEY_PREFS_HOST, hostInput.text.toString().trim())
+                    .putString(KEY_PREFS_API_KEY, apiKeyInput.text.toString().trim())
+                    .putString(KEY_PREFS_ENTITY_ID, entityIdInput.text.toString().trim())
+                    .putString(KEY_PREFS_ACCESS_TYPE, type.name)
+                    .putBoolean(KEY_PREFS_IS_ENTITY_ID_LEGACY, isEntityLegacy.isChecked)
+                    .putLong(LAST_PUBLISHED_TRIGGER_TIMESTAMP, 0)
+                    .apply()
+                Toast.makeText(
+                    this@EditConnectionActivity,
+                    R.string.toast_saved,
+                    Toast.LENGTH_SHORT
+                ).show()
+                lastRunWasSuccessful?.let {
+                    // On change, reset trigger time.
+                    NextAlarmUpdaterJob.markAsDone(this@EditConnectionActivity, it, 0)
+                }
+                finish()
+            }
+        }
+
     }
 
-    mBinding.testButton.setOnClickListener(
-        view -> {
-          final String host = mBinding.hostInput.getText().toString().trim();
-          final String token = mBinding.apiKeyInput.getText().toString().trim();
-          final String entityId = mBinding.entityIdInput.getText().toString().trim();
-          final boolean entityIdIsLegacy = mBinding.isEntityLegacy.isChecked();
-          mLastRunWasSuccessful = null;
-          startActivityForResult(
-              TestConnectionActivity.createIntent(
-                  this, host, token, entityId, getAccessType(), entityIdIsLegacy),
-              REQUEST_CODE_TEST_CONNECTION);
-        });
-
-    // Set current saved host and api key.
-    final SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-    mBinding.hostInput.setText(sharedPreferences.getString(KEY_PREFS_HOST, ""));
-    mBinding.apiKeyInput.setText(sharedPreferences.getString(KEY_PREFS_API_KEY, ""));
-
-    mBinding.keyType.setOnCheckedChangeListener(
-        (group, checkedId) -> {
-          if (checkedId == mBinding.keyIsWebhook.getId()) {
-            mBinding.isEntityLegacy.setEnabled(false);
-          } else {
-            mBinding.isEntityLegacy.setEnabled(true);
-          }
-
-          if (checkedId == mBinding.keyIsToken.getId()) {
-            mBinding.apiKey.setHint(mBinding.keyIsToken.getText());
-          } else if (checkedId == mBinding.keyIsWebhook.getId()) {
-            mBinding.apiKey.setHint(mBinding.keyIsWebhook.getText());
-          } else if (checkedId == mBinding.keyIsLegacy.getId()) {
-            mBinding.apiKey.setHint(mBinding.keyIsLegacy.getText());
-          }
-        });
-
-    int activeRadioButton;
-    final Constants.AccessType accessType = Migration.getAccessType(sharedPreferences);
-    if (accessType == Constants.AccessType.LONG_LIVED_TOKEN) {
-      activeRadioButton = mBinding.keyIsToken.getId();
-    } else if (accessType == Constants.AccessType.WEB_HOOK) {
-      activeRadioButton = mBinding.keyIsWebhook.getId();
-    } else {
-      activeRadioButton = mBinding.keyIsLegacy.getId();
+    override fun onBackPressed() {
+        val sharedPreferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
+        if ((sharedPreferences
+                .getString(
+                    KEY_PREFS_HOST,
+                    ""
+                ) != binding.hostInput.text.toString().trim()
+                    || sharedPreferences
+                .getString(
+                    KEY_PREFS_API_KEY,
+                    ""
+                ) != binding.apiKeyInput.text.toString().trim()
+                    || Migration.getEntityId(sharedPreferences) != binding.entityIdInput.text.toString()
+                .trim()) || Migration.entityIdIsLegacy(sharedPreferences) != binding.isEntityLegacy.isChecked || Migration.getAccessType(
+                sharedPreferences
+            ) != accessType
+        ) {
+            MaterialAlertDialogBuilder(this)
+                .setTitle(R.string.unsaved_changes_title)
+                .setMessage(R.string.unsaved_changes_message)
+                .setPositiveButton(R.string.unsaved_changes_discard) { _, _ -> finish() }
+                .setNeutralButton(R.string.unsaved_changes_cancel, null)
+                .show()
+        } else {
+            super.onBackPressed()
+        }
     }
-    mBinding.keyType.check(activeRadioButton);
 
-    // Migration of old versions to new versions
-    mBinding.entityIdInput.setText(Migration.getEntityId(sharedPreferences));
-    mBinding.isEntityLegacy.setChecked(Migration.entityIdIsLegacy(sharedPreferences));
-
-    mBinding.save.setOnClickListener(
-        v -> {
-          final Constants.AccessType type;
-          if (mBinding.keyIsToken.isChecked()) {
-            type = Constants.AccessType.LONG_LIVED_TOKEN;
-          } else if (mBinding.keyIsWebhook.isChecked()) {
-            type = Constants.AccessType.WEB_HOOK;
-          } else {
-            type = Constants.AccessType.LEGACY_API_KEY;
-          }
-
-          sharedPreferences
-              .edit()
-              .putString(KEY_PREFS_HOST, mBinding.hostInput.getText().toString().trim())
-              .putString(KEY_PREFS_API_KEY, mBinding.apiKeyInput.getText().toString().trim())
-              .putString(KEY_PREFS_ENTITY_ID, mBinding.entityIdInput.getText().toString().trim())
-              .putString(KEY_PREFS_ACCESS_TYPE, type.name())
-              .putBoolean(KEY_PREFS_IS_ENTITY_ID_LEGACY, mBinding.isEntityLegacy.isChecked())
-              .putLong(Constants.LAST_PUBLISHED_TRIGGER_TIMESTAMP, 0)
-              .apply();
-          Toast.makeText(this, R.string.toast_saved, Toast.LENGTH_SHORT).show();
-          if (mLastRunWasSuccessful != null) {
-            // On change, reset trigger time.
-            NextAlarmUpdaterJob.markAsDone(this, mLastRunWasSuccessful, 0);
-          }
-          finish();
-        });
-  }
-
-  @Override
-  public void onBackPressed() {
-    final SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-    if (!sharedPreferences
-            .getString(KEY_PREFS_HOST, "")
-            .equals(mBinding.hostInput.getText().toString().trim())
-        || !sharedPreferences
-            .getString(KEY_PREFS_API_KEY, "")
-            .equals(mBinding.apiKeyInput.getText().toString().trim())
-        || !Migration.getEntityId(sharedPreferences)
-            .equals(mBinding.entityIdInput.getText().toString().trim())
-        || Migration.entityIdIsLegacy(sharedPreferences) != mBinding.isEntityLegacy.isChecked()
-        || Migration.getAccessType(sharedPreferences) != getAccessType()) {
-      new MaterialAlertDialogBuilder(this)
-          .setTitle(R.string.unsaved_changes_title)
-          .setMessage(R.string.unsaved_changes_message)
-          .setPositiveButton(R.string.unsaved_changes_discard, (dialog, which) -> finish())
-          .setNeutralButton(R.string.unsaved_changes_cancel, null)
-          .show();
-    } else {
-      super.onBackPressed();
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        lastRunWasSuccessful?.let {
+            outState.putBoolean(KEY_LAST_SUCCESSFUL, it)
+        }
     }
-  }
 
-  @Override
-  protected void onSaveInstanceState(@NonNull Bundle outState) {
-    super.onSaveInstanceState(outState);
-    if (mLastRunWasSuccessful != null) {
-      outState.putBoolean(KEY_LAST_SUCCESSFUL, mLastRunWasSuccessful);
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if (item.itemId == R.id.action_about) {
+            startActivity(AboutActivity.createIntent(this))
+            return true
+        }
+        return super.onOptionsItemSelected(item)
     }
-  }
 
-  @Override
-  public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-    if (item.getItemId() == R.id.action_about) {
-      startActivity(AboutActivity.createIntent(this));
-      return true;
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQUEST_CODE_TEST_CONNECTION) {
+            lastRunWasSuccessful = getLastRunWasSuccessful(data)
+        }
     }
-    return super.onOptionsItemSelected(item);
-  }
 
-  @Override
-  protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-    super.onActivityResult(requestCode, resultCode, data);
-    if (requestCode == REQUEST_CODE_TEST_CONNECTION) {
-      mLastRunWasSuccessful = TestConnectionActivity.getLastRunWasSuccessful(data);
+    private fun getLastRunWasSuccessful(data: Intent?): Boolean? {
+        if (data == null) {
+            return null
+        }
+        val extras = data.extras
+        return if (extras != null && extras.containsKey(KEY_LAST_SUCCESSFUL)) data.getBooleanExtra(
+            KEY_LAST_SUCCESSFUL, false
+        ) else null
     }
-  }
 
-  private Constants.AccessType getAccessType() {
-    if (mBinding.keyIsWebhook.isChecked()) {
-      return Constants.AccessType.WEB_HOOK;
+    private val accessType: AccessType
+        get() {
+            if (binding.keyIsWebhook.isChecked) {
+                return AccessType.WEB_HOOK
+            }
+            return if (binding.keyIsLegacy.isChecked) {
+                AccessType.LEGACY_API_KEY
+            } else AccessType.LONG_LIVED_TOKEN
+        }
+
+    companion object {
+        fun createIntent(context: Context?): Intent =
+            Intent(context, EditConnectionActivity::class.java)
     }
-    if (mBinding.keyIsLegacy.isChecked()) {
-      return Constants.AccessType.LEGACY_API_KEY;
-    }
-    return Constants.AccessType.LONG_LIVED_TOKEN;
-  }
 }

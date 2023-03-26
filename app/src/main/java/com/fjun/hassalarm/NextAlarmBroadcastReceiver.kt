@@ -1,30 +1,28 @@
-package com.fjun.hassalarm;
+package com.fjun.hassalarm
 
-import android.app.AlarmManager;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.util.Log;
+import android.app.AlarmManager
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.util.Log
 
 /**
  * Listen for the global ACTION_NEXT_ALARM_CLOCK_CHANGED,
  * sent by the system when (decent) alarm clock apps schedule a new next alarm.
  * I.e. when the alarm is displayed in the toolbar/lock screen by the OS.
  */
-public class NextAlarmBroadcastReceiver extends BroadcastReceiver {
-    @Override
-    public void onReceive(Context context, Intent intent) {
+class NextAlarmBroadcastReceiver : BroadcastReceiver() {
+    override fun onReceive(context: Context, intent: Intent?) {
         if (intent == null) {
-            return;
+            return
         }
-
-        final boolean isBootIntent = Intent.ACTION_BOOT_COMPLETED.equalsIgnoreCase(intent.getAction());
-        final boolean isNextAlarmIntent = AlarmManager.ACTION_NEXT_ALARM_CLOCK_CHANGED.equalsIgnoreCase(intent.getAction());
+        val isBootIntent = Intent.ACTION_BOOT_COMPLETED.equals(intent.action, ignoreCase = true)
+        val isNextAlarmIntent =
+            AlarmManager.ACTION_NEXT_ALARM_CLOCK_CHANGED.equals(intent.action, ignoreCase = true)
         if (!isBootIntent && !isNextAlarmIntent) {
-            return;
+            return
         }
-        Log.d(Constants.LOG_TAG, String.format("Got intent. Boot: %s, next alarm: %s", isBootIntent, isNextAlarmIntent));
-
-        NextAlarmUpdaterJob.scheduleJob(context);
+        Log.d(LOG_TAG, "Got intent. Boot: $isBootIntent, next alarm: $isNextAlarmIntent")
+        NextAlarmUpdaterJob.scheduleJob(context)
     }
 }

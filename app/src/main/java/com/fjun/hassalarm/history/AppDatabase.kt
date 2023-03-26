@@ -1,17 +1,16 @@
 package com.fjun.hassalarm.history
 
 import android.content.Context
-import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import com.fjun.hassalarm.Constants
+
+private const val PUBLISH_HISTORY_DB_NAME = "PUBLISH-HISTORY-DB"
 
 @Database(
     entities = [Publish::class],
-    version = 3,
+    version = 4,
     exportSchema = true,
-    autoMigrations = [AutoMigration (from = 2, to = 3)]
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun publishDao(): PublishDao
@@ -30,8 +29,10 @@ abstract class AppDatabase : RoomDatabase() {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     AppDatabase::class.java,
-                    Constants.PUBLISH_HISTORY_DB_NAME
-                ).build()
+                    PUBLISH_HISTORY_DB_NAME
+                )
+                    .fallbackToDestructiveMigration()
+                    .build()
                 INSTANCE = instance
                 // return instance
                 instance

@@ -1,24 +1,20 @@
-package com.fjun.hassalarm;
+package com.fjun.hassalarm
 
-import android.content.Context;
-import android.content.Intent;
-import android.os.Bundle;
+import android.content.Context
+import android.content.Intent
+import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
+import com.fjun.hassalarm.databinding.ActivityAboutBinding
 
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-
-import com.fjun.hassalarm.databinding.ActivityAboutBinding;
-
-public class AboutActivity extends AppCompatActivity {
-
-    @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        final ActivityAboutBinding binding = ActivityAboutBinding.inflate(getLayoutInflater());
-        setContentView(binding.root);
+class AboutActivity : AppCompatActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        val binding = ActivityAboutBinding.inflate(layoutInflater)
+        setContentView(binding.root)
     }
 
-    public static Intent createIntent(Context context) {
-        return new Intent(context, AboutActivity.class);
+    companion object {
+        fun createIntent(context: Context?): Intent
+            = Intent(context, AboutActivity::class.java)
     }
 }

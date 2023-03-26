@@ -1,35 +1,29 @@
-package com.fjun.hassalarm;
+package com.fjun.hassalarm
 
 /**
  * Constants shared across the app.
  */
-public interface Constants {
 
-    enum AccessType {
-        LONG_LIVED_TOKEN,
-        WEB_HOOK,
-        // Deprecated.
-        LEGACY_API_KEY
-    }
+internal const val LOG_TAG = "hassalarm"
+internal const val PREFS_NAME = "hassalarm"
+internal const val KEY_PREFS_API_KEY = "api_key"
+internal const val KEY_PREFS_HOST = "host"
+internal const val KEY_PREFS_ENTITY_ID = "entity_id"
 
-    String LOG_TAG = "hassalarm";
-    String PREFS_NAME = "hassalarm";
-    String KEY_PREFS_API_KEY = "api_key";
-    String KEY_PREFS_HOST = "host";
-    String KEY_PREFS_ENTITY_ID = "entity_id";
-    // Deprecated.
-    String KEY_PREFS_IS_TOKEN = "is_token";
-    String KEY_PREFS_ACCESS_TYPE = "access_type";
-    // Deprecated.
-    String KEY_PREFS_IS_ENTITY_ID_LEGACY = "is_entity_id_legacy";
-    String DEFAULT_ENTITY_ID = "input_datetime.next_alarm";
-    // Deprecated.
-    String DEFAULT_LEGACY_ENTITY_ID = "sensor.next_alarm";
-    String LAST_PUBLISH_ATTEMPT = "last_publish_attempt";
-    String LAST_SUCCESSFUL_PUBLISH = "last_successful_publish";
-    String LAST_PUBLISH_WAS_SUCCESSFUL = "last_publish_was_successful";
-    String LAST_PUBLISHED_TRIGGER_TIMESTAMP = "last_published_trigger_timestamp";
-    String KEY_IGNORED_PACKAGES = "ignored_packages";
-    int DEFAULT_PORT = 8123;
-    String PUBLISH_HISTORY_DB_NAME = "PUBLISH-HISTORY-DB";
-}
+// Deprecated.
+internal const val KEY_PREFS_IS_TOKEN = "is_token"
+internal const val KEY_PREFS_ACCESS_TYPE = "access_type"
+
+// Deprecated.
+internal const val KEY_PREFS_IS_ENTITY_ID_LEGACY = "is_entity_id_legacy"
+internal const val DEFAULT_ENTITY_ID = "input_datetime.next_alarm"
+
+// Deprecated.
+internal const val DEFAULT_LEGACY_ENTITY_ID = "sensor.next_alarm"
+internal const val LAST_PUBLISH_ATTEMPT = "last_publish_attempt"
+internal const val LAST_SUCCESSFUL_PUBLISH = "last_successful_publish"
+internal const val LAST_PUBLISH_WAS_SUCCESSFUL = "last_publish_was_successful"
+internal const val LAST_PUBLISHED_TRIGGER_TIMESTAMP = "last_published_trigger_timestamp"
+internal const val KEY_IGNORED_PACKAGES = "ignored_packages"
+internal const val DEFAULT_PORT = 8123
+
