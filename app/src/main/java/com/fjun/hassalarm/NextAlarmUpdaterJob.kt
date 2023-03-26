@@ -15,6 +15,7 @@ import com.fjun.hassalarm.history.AppDatabase.Companion.getDatabase
 import com.fjun.hassalarm.history.Publish
 import com.fjun.hassalarm.history.PublishDao
 import java.io.IOException
+import java.net.URI
 import java.text.SimpleDateFormat
 import java.util.*
 import okhttp3.ResponseBody
@@ -178,11 +179,13 @@ class NextAlarmUpdaterJob : JobService() {
             // Verify host and API key.
             require(hostInput.isNotEmpty()) { "Host is missing. You need to specify the host to your hass.io instance." }
 
-            // No port number? Add default one.
-            val hostToUse = when {
-                !hostInput.contains(":") -> "$hostInput:$DEFAULT_PORT"
-                !hostInput.startsWith("http://") && !hostInput.startsWith("https://") -> "http://$hostInput"
-                else -> hostInput
+            var hostToUse = hostInput
+            if (!hostToUse.startsWith("http://") && !hostToUse.startsWith("https://")) {
+                hostToUse = "http://$hostToUse"
+            }
+            val uri = URI(hostToUse)
+            if (uri.port == -1) {
+                hostToUse = "$hostToUse:$DEFAULT_PORT"
             }
 
             // Support empty API key, if there is no one required.
