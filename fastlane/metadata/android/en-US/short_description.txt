@@ -1,0 +1,1 @@
+Update Home Assistant (Hass.io) sensor based on next scheduled alarm
