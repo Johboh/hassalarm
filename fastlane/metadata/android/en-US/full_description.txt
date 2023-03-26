@@ -1,0 +1,1 @@
+<p><i>Hassalarm</i> listens for updates from alarm clocks and set <code>input_datetime.next_alarm</code> (or a custom entity id) with the next scheduled alarm for your Home Assistant (hass.io) system.</p>
