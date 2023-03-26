@@ -18,7 +18,6 @@ import android.util.Log;
 import com.fjun.hassalarm.history.AppDatabase;
 import com.fjun.hassalarm.history.Publish;
 import com.fjun.hassalarm.history.PublishDao;
-import com.google.auto.value.AutoValue;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -62,7 +61,7 @@ public class NextAlarmUpdaterJob extends JobService {
         final long triggerTimestamp;
         final String creatorPackage;
         try {
-            final Request request = createRequest(this);
+            final UpdateRequest request = createRequest(this);
             triggerTimestamp = request.triggerTimestamp();
             creatorPackage = request.creatorPackage();
             mCall = request.call();
@@ -134,7 +133,7 @@ public class NextAlarmUpdaterJob extends JobService {
         return true;
     }
 
-    public Request createRequest(Context context) throws IllegalArgumentException {
+    public UpdateRequest createRequest(Context context) throws IllegalArgumentException {
         final SharedPreferences sharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         String host = sharedPreferences.getString(KEY_PREFS_HOST, "");
         final String apiKeyOrToken = sharedPreferences.getString(KEY_PREFS_API_KEY, "");
@@ -149,7 +148,7 @@ public class NextAlarmUpdaterJob extends JobService {
      * Create a call that can be executed. Will throw an exception in case of any failure,
      * like missing parameters etc.
      */
-    public static Request createRequest(Context context,
+    public static UpdateRequest createRequest(Context context,
                                         String host,
                                         String apiKeyOrToken,
                                         String entityId,
@@ -234,7 +233,7 @@ public class NextAlarmUpdaterJob extends JobService {
                 call = hassApi.setInputDatetimeUsingApiKey(datetime, apiKeyOrToken);
             }
         }
-        return Request.create(call, triggerTimestamp, creatorPackage);
+        return new UpdateRequest(triggerTimestamp, call, creatorPackage);
     }
 
     /**
@@ -300,19 +299,6 @@ public class NextAlarmUpdaterJob extends JobService {
             final long now = System.currentTimeMillis();
             final long halfDiff = Math.max(0, triggerTime - now) / 2;
             return (int)Math.min(MAX_EXECUTION_DELAY_MS, halfDiff);
-        }
-    }
-
-    @AutoValue
-    static abstract class Request {
-        public abstract Call<ResponseBody> call();
-
-        public abstract long triggerTimestamp();
-
-        public abstract String creatorPackage();
-
-        static Request create(Call<ResponseBody> call, long triggerTimestamp, String creatorPackage) {
-            return new AutoValue_NextAlarmUpdaterJob_Request(call, triggerTimestamp, creatorPackage);
         }
     }
 }

@@ -40,8 +40,8 @@ public class TestConnectionActivity extends AppCompatActivity {
   private static final String EXTRA_ENTITY_ID_IS_LEGACY = "entity_id_is_legacy";
 
   private String mStrippedLog;
+  private UpdateRequest mRequest;
   private Boolean mLastRunWasSuccessful;
-  private NextAlarmUpdaterJob.Request mRequest;
   private ActivityTestConnectionBinding mBinding;
 
   private String mHost;

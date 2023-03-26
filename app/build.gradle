@@ -11,8 +11,8 @@ android {
         applicationId "com.fjun.hassalarm"
         minSdkVersion 23
         targetSdkVersion 33
-        versionCode 22
-        versionName "1.22"
+        versionCode 23
+        versionName "1.23"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         javaCompileOptions {
             annotationProcessorOptions {
@@ -47,8 +47,6 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.6.1")
     kapt "androidx.room:room-compiler:2.5.1"
     implementation 'com.squareup.retrofit2:converter-gson:2.5.0'
-    implementation "com.google.auto.value:auto-value-annotations:1.7"
-    kapt "com.google.auto.value:auto-value:1.7"
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
