@@ -6,11 +6,11 @@ android {
     viewBinding {
         enabled = true
     }
-    compileSdkVersion 33
     defaultConfig {
+        compileSdk 34
         applicationId "com.fjun.hassalarm"
         minSdkVersion 23
-        targetSdkVersion 33
+        targetSdkVersion 34
         versionCode 25
         versionName "1.25"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -27,8 +27,8 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
     namespace 'com.fjun.hassalarm'
 }
