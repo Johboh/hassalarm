@@ -7,10 +7,10 @@ android {
         enabled = true
     }
     defaultConfig {
-        compileSdk 34
+        compileSdk 35
         applicationId "com.fjun.hassalarm"
         minSdkVersion 23
-        targetSdkVersion 34
+        targetSdkVersion 35
         versionCode 27
         versionName "1.27"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -30,6 +30,7 @@ android {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
+    kotlinOptions { jvmTarget = "17" }
     namespace 'com.fjun.hassalarm'
 }
 
