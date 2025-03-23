@@ -5,7 +5,20 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <queries>
+        <package android:name="com.google.android.deskclock" />
         <package android:name="com.sec.android.app.clockpackage" />
+        <package android:name="com.oneplus.deskclock" />
+        <package android:name="com.android.deskclock" />
+        <package android:name="com.huawei.deskclock" />
+        <package android:name="com.coloros.deskclock" />
+        <package android:name="com.sonyericsson.alarm" />
+        <package android:name="com.motorola.blur.alarmclock" />
+        <package android:name="com.google.android.apps.wellbeing" />
+        <package android:name="com.samsung.android.modesandroutines" />
+        <package android:name="com.oneplus.opzenmode" />
+        <package android:name="com.miui.screenrecorder" />
+        <package android:name="com.huawei.parentcontrol" />
+        <package android:name="com.coloros.safekid" />
     </queries>
 
     <application
