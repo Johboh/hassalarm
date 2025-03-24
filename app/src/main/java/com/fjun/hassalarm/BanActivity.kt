@@ -34,7 +34,7 @@ class BanActivity : AppCompatActivity() {
         adapter = BanAdapter { packageName: String ->
             // REMOVE
             val set = sharedPreferences
-                .getStringSet(KEY_IGNORED_PACKAGES, HashSet<String>())?: setOf()
+                .getStringSet(KEY_IGNORED_PACKAGES, HashSet<String>()) ?: setOf()
             val newSet = set.toMutableSet().apply {
                 remove(packageName)
             }
@@ -42,7 +42,7 @@ class BanActivity : AppCompatActivity() {
             setList(sharedPreferences, adapter)
         }
 
-        with (binding) {
+        with(binding) {
             add.isEnabled = pendingIntent != null
             nextPackage.text = pendingPackageName ?: missingPackageName
             list.layoutManager = LinearLayoutManager(this@BanActivity)
@@ -52,7 +52,7 @@ class BanActivity : AppCompatActivity() {
                 val creatorPackage = pendingIntent?.creatorPackage
                 if (!creatorPackage.isNullOrEmpty()) {
                     val set = sharedPreferences
-                        .getStringSet(KEY_IGNORED_PACKAGES, HashSet<String>())?: setOf()
+                        .getStringSet(KEY_IGNORED_PACKAGES, HashSet<String>()) ?: setOf()
                     val newSet = set.toMutableSet().apply {
                         add(creatorPackage)
                     }
@@ -66,7 +66,10 @@ class BanActivity : AppCompatActivity() {
     }
 
     private fun setList(sharedPreferences: SharedPreferences, adapter: BanAdapter) {
-        adapter.set((sharedPreferences.getStringSet(KEY_IGNORED_PACKAGES, HashSet<String>())?:setOf()).toList())
+        adapter.set(
+            (sharedPreferences.getStringSet(KEY_IGNORED_PACKAGES, HashSet<String>())
+                ?: setOf()).toList()
+        )
     }
 
     private fun save(sharedPreferences: SharedPreferences, set: Set<String>) {
