@@ -23,6 +23,7 @@ class MainActivity : AppCompatActivity() {
         val binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         setSupportActionBar(binding.toolbar)
+        setupInsets(binding.root)
         this.binding = binding.content
         this.binding.editConnection.setOnClickListener {
             startActivity(EditConnectionActivity.createIntent(this))

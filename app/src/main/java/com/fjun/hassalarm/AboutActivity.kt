@@ -11,6 +11,7 @@ class AboutActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         val binding = ActivityAboutBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        setupInsets(binding.root)
     }
 
     companion object {

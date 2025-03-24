@@ -45,6 +45,7 @@ class HistoryActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         val bindings = ActivityHistoryBinding.inflate(layoutInflater)
         setContentView(bindings.root)
+        setupInsets(bindings.root)
         val adapter = HistoryAdapter() {
             val dialog = AlertDialog.Builder(this)
             dialog.setTitle(getString(R.string.history_error_dialog_title))

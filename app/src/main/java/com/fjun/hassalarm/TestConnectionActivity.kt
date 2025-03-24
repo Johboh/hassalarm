@@ -49,6 +49,7 @@ class TestConnectionActivity : AppCompatActivity() {
             layoutInflater
         )
         setContentView(binding.root)
+        setupInsets(binding.root)
         if (savedInstanceState != null) {
             lastRunWasSuccessful = savedInstanceState.getBoolean(KEY_LAST_SUCCESSFUL, false)
         }

@@ -17,6 +17,7 @@ class BanActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         val binding = ActivityBanlistBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        setupInsets(binding.root)
 
         val alarmManager = getSystemService(AlarmManager::class.java)
         val alarmClockInfo = alarmManager.nextAlarmClock

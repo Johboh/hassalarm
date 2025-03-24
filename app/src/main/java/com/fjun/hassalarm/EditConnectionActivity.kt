@@ -23,6 +23,7 @@ class EditConnectionActivity : AppCompatActivity() {
             layoutInflater
         )
         setContentView(binding.root)
+        setupInsets(binding.root)
         setSupportActionBar(binding.toolbar)
         this.binding = binding.content
         if (savedInstanceState != null) {
