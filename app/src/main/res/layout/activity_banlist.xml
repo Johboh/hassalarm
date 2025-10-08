@@ -40,6 +40,29 @@
         android:text="@string/ban_button_add_to_ignore_list"
         android:layout_marginTop="8dp"
         />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/manual_package_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="15dp"
+        android:hint="@string/ban_manual_package_name_hint">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/manual_package_edit_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <Button
+        android:id="@+id/add_manual"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/ban_button_add_manual_to_ignore_list"
+        android:layout_marginTop="8dp"
+        />
+
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

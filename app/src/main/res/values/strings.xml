@@ -51,6 +51,8 @@
     <string name="ban_howto">To ignore an app, open this view when the next alarm is wrong and add the app to the list of apps to ignore.</string>
     <string name="ban_ignored">Ignored Apps</string>
     <string name="ban_button_add_to_ignore_list">Add to ignore list</string>
+    <string name="ban_button_add_manual_to_ignore_list">Add manual package to ignore list</string>
+    <string name="ban_manual_package_name_hint">Manual package name</string>
     <string name="ban_no_alarm_set"><![CDATA[<none>]]></string>
     <string name="ban_row_remove">Remove</string>
     <string name="main_next_is_ignored_app">Next alarm is from an ignored app.</string>
