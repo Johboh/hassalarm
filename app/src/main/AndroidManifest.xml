@@ -15,6 +15,7 @@
         <package android:name="com.motorola.blur.alarmclock" />
         <package android:name="com.google.android.apps.wellbeing" />
         <package android:name="com.samsung.android.modesandroutines" />
+        <package android:name="com.samsung.android.fmm" />
         <package android:name="com.oneplus.opzenmode" />
         <package android:name="com.miui.screenrecorder" />
         <package android:name="com.huawei.parentcontrol" />
