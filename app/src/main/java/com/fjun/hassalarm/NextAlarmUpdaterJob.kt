@@ -8,8 +8,8 @@ import android.app.job.JobScheduler
 import android.app.job.JobService
 import android.content.ComponentName
 import android.content.Context
-import android.os.AsyncTask
 import android.util.Log
+import androidx.core.content.edit
 import com.fjun.hassalarm.UnsafeOkHttpClient.unsafeOkHttpClient
 import com.fjun.hassalarm.history.AppDatabase.Companion.getDatabase
 import com.fjun.hassalarm.history.Publish
@@ -18,6 +18,10 @@ import java.io.IOException
 import java.net.URI
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.Callback
@@ -35,6 +39,8 @@ private const val JOB_ID = 0
 
 class NextAlarmUpdaterJob : JobService() {
     private var call: Call<ResponseBody>? = null
+
+    private var insertJob: Job? = null
 
     override fun onStartJob(jobParameters: JobParameters): Boolean {
         Log.d(LOG_TAG, "Starting job.")
@@ -74,7 +80,7 @@ class NextAlarmUpdaterJob : JobService() {
                 try {
                     val body = response.body()
                     if (body != null) {
-                        message = body.toString()
+                        message = response.raw().toString()
                         Log.d(LOG_TAG, "Retofit succeeded: $message")
                         successful = true
                     } else if (response.errorBody() != null) {
@@ -123,6 +129,7 @@ class NextAlarmUpdaterJob : JobService() {
     override fun onStopJob(jobParameters: JobParameters): Boolean {
         Log.d(LOG_TAG, "Stopping job.")
         call?.cancel()
+        insertJob?.cancel()
         return true
     }
 
@@ -154,7 +161,10 @@ class NextAlarmUpdaterJob : JobService() {
 
 
     private fun insertPublish(publish: Publish) {
-        AsyncTask.execute { database().insertAll(publish) }
+        insertJob?.cancel()
+        insertJob = CoroutineScope(Dispatchers.IO).launch {
+            database().insertAll(publish)
+        }
     }
 
     companion object {
@@ -278,18 +288,18 @@ class NextAlarmUpdaterJob : JobService() {
             val sharedPreferences =
                 context.getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
             val timestamp = System.currentTimeMillis()
-            val editor = sharedPreferences
-                .edit()
-                .putBoolean(LAST_PUBLISH_WAS_SUCCESSFUL, successful)
-                .putLong(LAST_PUBLISH_ATTEMPT, timestamp)
-            if (successful) {
-                editor.putLong(LAST_SUCCESSFUL_PUBLISH, timestamp)
-                editor.putLong(
-                    LAST_PUBLISHED_TRIGGER_TIMESTAMP,
-                    triggerTimestamp
-                )
-            }
-            editor.apply()
+            sharedPreferences
+                .edit {
+                    putBoolean(LAST_PUBLISH_WAS_SUCCESSFUL, successful)
+                    putLong(LAST_PUBLISH_ATTEMPT, timestamp)
+                    if (successful) {
+                        putLong(LAST_SUCCESSFUL_PUBLISH, timestamp)
+                        putLong(
+                            LAST_PUBLISHED_TRIGGER_TIMESTAMP,
+                            triggerTimestamp
+                        )
+                    }
+                }
         }
 
         private fun alarmClockInfo(context: Context): AlarmClockInfo? {

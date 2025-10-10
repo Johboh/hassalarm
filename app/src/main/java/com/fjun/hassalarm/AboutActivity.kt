@@ -3,15 +3,20 @@ package com.fjun.hassalarm
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import com.fjun.hassalarm.databinding.ActivityAboutBinding
+import androidx.compose.material.MaterialTheme
 
 class AboutActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val binding = ActivityAboutBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-        setupInsets(binding.root)
+        enableEdgeToEdge()
+        setContent {
+            MaterialTheme {
+                AboutScreen()
+            }
+        }
     }
 
     companion object {

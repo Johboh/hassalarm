@@ -60,9 +60,15 @@
             android:label="@string/edit_connection_label"
             android:windowSoftInputMode="adjustPan"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name=".AboutActivity" />
-        <activity android:name=".BanActivity" />
-        <activity android:name=".HistoryActivity" />
+        <activity
+            android:name=".AboutActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".BanActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".HistoryActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".TestConnectionActivity"
             android:theme="@style/AppTheme.NoActionBar" />
