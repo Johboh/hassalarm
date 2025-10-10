@@ -25,5 +25,3 @@ internal const val LAST_SUCCESSFUL_PUBLISH = "last_successful_publish"
 internal const val LAST_PUBLISH_WAS_SUCCESSFUL = "last_publish_was_successful"
 internal const val LAST_PUBLISHED_TRIGGER_TIMESTAMP = "last_published_trigger_timestamp"
 internal const val KEY_IGNORED_PACKAGES = "ignored_packages"
-internal const val DEFAULT_PORT = 8123
-
