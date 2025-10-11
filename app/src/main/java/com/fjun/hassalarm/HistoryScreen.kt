@@ -21,6 +21,7 @@ import androidx.compose.material.Button
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
@@ -77,6 +78,7 @@ fun HistoryScreen(
         modifier = Modifier.windowInsetsPadding(WindowInsets.systemBars),
         topBar = {
             TopAppBar(
+                backgroundColor = MaterialTheme.colors.primary,
                 title = { Text(text = stringResource(id = R.string.action_history)) },
                 navigationIcon = {
                     IconButton(onClick = { (context as? Activity)?.finish() }) {

@@ -32,6 +32,7 @@ fun AboutScreen() {
         modifier = Modifier.windowInsetsPadding(WindowInsets.systemBars),
         topBar = {
             TopAppBar(
+                backgroundColor = MaterialTheme.colors.primary,
                 title = { Text(text = stringResource(id = R.string.action_about)) },
                 navigationIcon = {
                     IconButton(onClick = { (context as? Activity)?.finish() }) {

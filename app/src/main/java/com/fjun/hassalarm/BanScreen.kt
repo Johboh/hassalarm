@@ -53,6 +53,7 @@ fun BanScreen(viewModel: BanViewModel = viewModel()) {
         modifier = Modifier.windowInsetsPadding(WindowInsets.systemBars),
         topBar = {
             TopAppBar(
+                backgroundColor = MaterialTheme.colors.primary,
                 title = { Text(text = stringResource(id = R.string.action_ban)) },
                 navigationIcon = {
                     IconButton(onClick = { (context as? Activity)?.finish() }) {

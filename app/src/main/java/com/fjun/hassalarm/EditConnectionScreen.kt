@@ -21,6 +21,7 @@ import androidx.compose.material.AlertDialog
 import androidx.compose.material.Button
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.RadioButton
 import androidx.compose.material.Scaffold
@@ -91,6 +92,7 @@ fun EditConnectionScreen(viewModel: EditConnectionViewModel = viewModel()) {
         modifier = Modifier.windowInsetsPadding(WindowInsets.systemBars),
         topBar = {
             TopAppBar(
+                backgroundColor = MaterialTheme.colors.primary,
                 title = { Text(text = stringResource(id = R.string.edit_connection)) },
                 navigationIcon = {
                     IconButton(onClick = { (context as? Activity)?.finish() }) {

@@ -14,6 +14,7 @@ import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
@@ -48,6 +49,7 @@ fun MainScreen(viewModel: MainViewModel = viewModel(), onMenuClick: (Int) -> Uni
         modifier = Modifier.windowInsetsPadding(WindowInsets.systemBars),
         topBar = {
             TopAppBar(
+                backgroundColor = MaterialTheme.colors.primary,
                 title = { Text(text = stringResource(id = R.string.app_name)) },
                 actions = {
                     IconButton(onClick = { showMenu = !showMenu }) {

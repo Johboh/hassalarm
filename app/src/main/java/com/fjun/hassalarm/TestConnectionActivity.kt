@@ -6,7 +6,7 @@ import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.material.MaterialTheme
+import com.fjun.hassalarm.ui.theme.HassAlarmTheme
 
 class TestConnectionActivity : AppCompatActivity() {
 
@@ -36,7 +36,7 @@ class TestConnectionActivity : AppCompatActivity() {
         enableEdgeToEdge()
 
         setContent {
-            MaterialTheme {
+            HassAlarmTheme {
                 TestConnectionScreen(
                     host = host,
                     token = token,

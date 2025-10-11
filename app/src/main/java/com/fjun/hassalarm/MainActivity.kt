@@ -5,8 +5,8 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.material.MaterialTheme
 import com.fjun.hassalarm.HistoryActivity.Companion.createIntent
+import com.fjun.hassalarm.ui.theme.HassAlarmTheme
 
 class MainActivity : AppCompatActivity() {
 
@@ -16,7 +16,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            MaterialTheme {
+            HassAlarmTheme {
                 MainScreen(viewModel = viewModel, onMenuClick = {
                     when (it) {
                         R.id.action_about -> startActivity(AboutActivity.createIntent(this))
