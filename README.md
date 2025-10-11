@@ -6,14 +6,8 @@ Once that happen, a call to your Hass.io instance will happen within an hour, gi
 
 ## Home Assistant setup
 1. Require Home Assistant 2020.12.1 or later.
-1. Add a `input_datetime` with both date and time in your `configuration.yaml`
-  ```
-  input_datetime:
-    next_alarm:
-      name: Next scheduled alarm
-      has_date: true
-      has_time: true
-  ```
+1. Go to [Settings > Devices & services > Helpers](https://my.home-assistant.io/redirect/helpers)
+1. Click the add button and then choose the Date and/or time option ([see more](https://www.home-assistant.io/integrations/input_datetime/)).
 1. Add a time sensor in your `configuration.yaml`:
   ```
   sensor:
