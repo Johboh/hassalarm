@@ -191,7 +191,11 @@ class NextAlarmUpdaterJob : JobService() {
 
             var hostToUse = hostInput
             if (!hostToUse.startsWith("http://") && !hostToUse.startsWith("https://")) {
-                hostToUse = "https://$hostToUse"
+                hostToUse = "http://$hostToUse"
+            }
+            val uri = URI(hostToUse)
+            if (uri.port == -1) {
+                hostToUse = "$hostToUse:$DEFAULT_PORT"
             }
 
             // Support empty API key, if there is no one required.
