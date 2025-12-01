@@ -27,6 +27,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
         NextAlarmUpdaterJob.scheduleJob(this)
+        SanityCheckJob.scheduleJob(this)
     }
 
     override fun onResume() {

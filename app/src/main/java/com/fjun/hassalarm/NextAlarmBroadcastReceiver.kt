@@ -24,5 +24,6 @@ class NextAlarmBroadcastReceiver : BroadcastReceiver() {
         }
         Log.d(LOG_TAG, "Got intent. Boot: $isBootIntent, next alarm: $isNextAlarmIntent")
         NextAlarmUpdaterJob.scheduleJob(context)
+        SanityCheckJob.scheduleJob(context)
     }
 }

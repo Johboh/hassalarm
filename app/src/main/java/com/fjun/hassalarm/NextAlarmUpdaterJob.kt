@@ -276,7 +276,7 @@ class NextAlarmUpdaterJob : JobService() {
                 .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
                 .setRequiresCharging(false)
                 .setRequiresDeviceIdle(false)
-                .setBackoffCriteria(BACKOFF_MS, JobInfo.BACKOFF_POLICY_LINEAR)
+                .setBackoffCriteria(BACKOFF_MS, JobInfo.BACKOFF_POLICY_EXPONENTIAL)
                 .setMinimumLatency(MINIMUM_LATENCY_MS)
                 .setOverrideDeadline(deadline(context))
                 .build()
