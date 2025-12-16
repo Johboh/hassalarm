@@ -10,7 +10,7 @@ import android.content.Context
 import android.util.Log
 
 private const val JOB_ID = 1
-private const val PERIODIC_INTERVAL_MS = 2 * 3600L * 1000L // 2h
+private const val PERIODIC_INTERVAL_MS = 3600L * 1000L // 1h
 
 class SanityCheckJob : JobService() {
 

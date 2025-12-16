@@ -75,24 +75,25 @@ class NextAlarmUpdaterJob : JobService() {
         Log.d(LOG_TAG, "Enqueueing retrofit job.")
         call?.enqueue(object : Callback<ResponseBody> {
             override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
-                var successful = false
-                var message = ""
-                try {
-                    val body = response.body()
-                    if (body != null) {
-                        message = response.raw().toString()
-                        Log.d(LOG_TAG, "Retofit succeeded: $message")
-                        successful = true
-                    } else if (response.errorBody() != null) {
-                        message = response.errorBody()?.string().orEmpty()
-                        Log.e(LOG_TAG, "Retofit failed: $message")
-                    } else {
-                        message = response.code().toString()
-                        Log.e(LOG_TAG, "Retofit failed with code: $message")
+                val successful = response.isSuccessful
+                var message: String
+                if (successful) {
+                    message = response.raw().toString()
+                    Log.d(LOG_TAG, "Retofit succeeded: $message")
+                } else {
+                    message = try {
+                        val errorBody = response.errorBody()?.string()
+                        if (errorBody.isNullOrBlank()) {
+                            "Request failed with code: ${response.code()}"
+                        } else {
+                            errorBody
+                        }
+                    } catch (e: IOException) {
+                        e.message ?: "IOException while reading error body"
                     }
-                } catch (e: IOException) {
-                    Log.e(LOG_TAG, "Retofit failed: " + e.message)
+                    Log.e(LOG_TAG, "Retofit failed: $message")
                 }
+
                 jobFinished(jobParameters, !successful)
                 markAsDone(this@NextAlarmUpdaterJob, successful, triggerTimestamp)
                 insertPublish(
@@ -276,7 +277,7 @@ class NextAlarmUpdaterJob : JobService() {
                 .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
                 .setRequiresCharging(false)
                 .setRequiresDeviceIdle(false)
-                .setBackoffCriteria(BACKOFF_MS, JobInfo.BACKOFF_POLICY_EXPONENTIAL)
+                .setBackoffCriteria(BACKOFF_MS, JobInfo.BACKOFF_POLICY_LINEAR)
                 .setMinimumLatency(MINIMUM_LATENCY_MS)
                 .setOverrideDeadline(deadline(context))
                 .build()
