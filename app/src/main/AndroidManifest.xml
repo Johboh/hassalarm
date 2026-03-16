@@ -20,6 +20,7 @@
         <package android:name="com.miui.screenrecorder" />
         <package android:name="com.huawei.parentcontrol" />
         <package android:name="com.coloros.safekid" />
+        <package android:name="org.thoughtcrime.securesms" />
     </queries>
 
     <application
