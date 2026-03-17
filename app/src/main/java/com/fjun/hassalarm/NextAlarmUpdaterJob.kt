@@ -187,14 +187,30 @@ class NextAlarmUpdaterJob : JobService() {
             val alarmManager = context.getSystemService(AlarmManager::class.java)
             val alarmClockInfo = alarmManager.nextAlarmClock
 
-            // Verify host and API key.
-            require(hostInput.isNotEmpty()) { "Host is missing. You need to specify the host to your hass.io instance." }
+            // Normalize + verify host
+            var hostToUse = hostInput.trim()
 
-            var hostToUse = hostInput
+            require(hostToUse.isNotEmpty()) {
+                "Host is missing. You need to specify the host to your hass.io instance."
+            }
+
+            // Add scheme if missing
             if (!hostToUse.startsWith("http://") && !hostToUse.startsWith("https://")) {
                 hostToUse = "http://$hostToUse"
             }
-            val uri = URI(hostToUse)
+
+            // Validate URI safely
+            val uri = try {
+                URI(hostToUse)
+            } catch (e: Exception) {
+                throw IllegalArgumentException("Invalid host: $hostToUse, $e")
+            }
+
+            require(!uri.host.isNullOrEmpty()) {
+                "Invalid host. Please enter a valid hostname or IP address."
+            }
+
+            // Add default port if missing
             if (uri.port == -1) {
                 hostToUse = "$hostToUse:$DEFAULT_PORT"
             }
