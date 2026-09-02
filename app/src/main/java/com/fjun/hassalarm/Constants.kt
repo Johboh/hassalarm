@@ -26,4 +26,6 @@ internal const val LAST_PUBLISH_WAS_SUCCESSFUL = "last_publish_was_successful"
 internal const val LAST_PUBLISHED_TRIGGER_TIMESTAMP = "last_published_trigger_timestamp"
 internal const val KEY_IGNORED_PACKAGES = "ignored_packages"
 internal const val DEFAULT_PORT = 8123
+internal const val KEY_RETRY_COUNT = "retry_count"
+internal const val ACTION_RETRY_UPDATE = "com.fjun.hassalarm.ACTION_RETRY_UPDATE"
 

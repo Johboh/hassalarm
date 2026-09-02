@@ -49,7 +49,7 @@ class TestConnectionViewModel(application: Application) : AndroidViewModel(appli
         }
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                updateRequest = NextAlarmUpdaterJob.createRequest(
+                updateRequest = AlarmUpdater.createRequest(
                     getApplication(), host, token, entityId, accessType, entityIdIsLegacy, HashSet()
                 )
                 val call = updateRequest!!.call
