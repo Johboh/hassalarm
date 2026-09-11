@@ -64,4 +64,7 @@
     <string name="history_error_dialog_button_ok">OK</string>
     <string name="history_clear">Clear history</string>
     <string name="history_cleared">History cleared</string>
+    <string name="resticted_battery_body">Android may block network access during the night (Doze mode). In App settings, set Battery usage to \"Unrestricted\" to allow reliable updates.</string>
+    <string name="resticted_battery_title">Battery optimization active</string>
+    <string name="resticted_battery_button">Open settings</string>
 </resources>

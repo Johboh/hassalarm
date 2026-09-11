@@ -4,6 +4,7 @@ import android.app.AlarmManager
 import android.app.Application
 import android.content.Context
 import android.content.SharedPreferences
+import android.os.PowerManager
 import androidx.lifecycle.AndroidViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -30,11 +31,17 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val _nextAlarm = MutableStateFlow("")
     val nextAlarm: StateFlow<String> = _nextAlarm.asStateFlow()
 
+    private val _isIgnoringBatteryOptimizations = MutableStateFlow(true)
+    val isIgnoringBatteryOptimizations: StateFlow<Boolean> = _isIgnoringBatteryOptimizations.asStateFlow()
+
     init {
         updateView()
     }
 
     fun updateView() {
+        val powerManager = getApplication<Application>().getSystemService(Context.POWER_SERVICE) as? PowerManager
+        _isIgnoringBatteryOptimizations.value = powerManager?.isIgnoringBatteryOptimizations(getApplication<Application>().packageName) ?: true
+
         val wasSuccessful = sharedPreferences.getBoolean(LAST_PUBLISH_WAS_SUCCESSFUL, false)
         val lastAttempt = sharedPreferences.getLong(LAST_PUBLISH_ATTEMPT, 0)
         val lastSuccessfulAttempt = sharedPreferences.getLong(LAST_SUCCESSFUL_PUBLISH, 0)

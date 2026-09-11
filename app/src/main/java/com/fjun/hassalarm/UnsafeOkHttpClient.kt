@@ -2,6 +2,7 @@ package com.fjun.hassalarm
 
 import java.security.SecureRandom
 import java.security.cert.X509Certificate
+import java.util.concurrent.TimeUnit
 import javax.net.ssl.SSLContext
 import javax.net.ssl.TrustManager
 import javax.net.ssl.X509TrustManager
@@ -48,6 +49,9 @@ object UnsafeOkHttpClient {
             val builder = OkHttpClient.Builder()
             builder.sslSocketFactory(sslSocketFactory, trustAllCerts[0] as X509TrustManager)
             builder.hostnameVerifier { _, _ -> true }
+            builder.connectTimeout(15, TimeUnit.SECONDS)
+            builder.readTimeout(15, TimeUnit.SECONDS)
+            builder.writeTimeout(15, TimeUnit.SECONDS)
             builder.build()
         } catch (e: Exception) {
             throw RuntimeException(e)

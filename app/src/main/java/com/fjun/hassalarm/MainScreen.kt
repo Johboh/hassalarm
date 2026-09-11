@@ -1,15 +1,19 @@
 package com.fjun.hassalarm
 
+import android.content.Intent
+import android.provider.Settings
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material.Button
+import androidx.compose.material.Card
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.Icon
@@ -31,9 +35,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
@@ -43,6 +49,7 @@ fun MainScreen(viewModel: MainViewModel = viewModel(), onMenuClick: (Int) -> Uni
     val lastPublishAt by viewModel.lastPublishAt.collectAsState()
     val lastSuccessfulPublishAt by viewModel.lastSuccessfulPublishAt.collectAsState()
     val nextAlarm by viewModel.nextAlarm.collectAsState()
+    val isIgnoringBatteryOptimizations by viewModel.isIgnoringBatteryOptimizations.collectAsState()
     var showMenu by remember { mutableStateOf(false) }
 
     Scaffold(
@@ -110,6 +117,47 @@ fun MainScreen(viewModel: MainViewModel = viewModel(), onMenuClick: (Int) -> Uni
                     context.startActivity(EditConnectionActivity.createIntent(context))
                 }) {
                     Text(text = stringResource(id = R.string.edit_connection))
+                }
+                if (!isIgnoringBatteryOptimizations) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Card(
+                        backgroundColor = MaterialTheme.colors.error.copy(alpha = 0.1f),
+                        elevation = 0.dp,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(12.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = stringResource(R.string.resticted_battery_title),
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colors.error,
+                                fontSize = 14.sp
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = stringResource(R.string.resticted_battery_body),
+                                fontSize = 12.sp,
+                                textAlign = TextAlign.Center
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Button(onClick = {
+                                try {
+                                    val intent =
+                                        Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                                            data = "package:${context.packageName}".toUri()
+                                        }
+                                    context.startActivity(intent)
+                                } catch (e: Exception) {
+                                    val intent = Intent(Settings.ACTION_SETTINGS)
+                                    context.startActivity(intent)
+                                }
+                            }) {
+                                Text(text = stringResource(R.string.resticted_battery_button))
+                            }
+                        }
+                    }
                 }
             }
         }
